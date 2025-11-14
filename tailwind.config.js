@@ -15,4 +15,8 @@ module.exports = {
     },
   },
   plugins: [],
+  // Prevent conflicts with React Native
+  corePlugins: {
+    preflight: false,
+  },
 }
