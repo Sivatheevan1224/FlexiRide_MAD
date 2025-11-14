@@ -2,7 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageSourcePropType, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../../components/ui/card';
 
@@ -11,7 +11,7 @@ interface Vehicle {
   name: string;
   type: 'car' | 'bike';
   price: number;
-  image: string;
+  image: string | ImageSourcePropType;
   status: 'available' | 'rented';
 }
 
@@ -26,7 +26,7 @@ export default function ManageVehiclesScreen() {
       name: 'Honda City',
       type: 'car',
       price: 1500,
-      image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
+      image: require('../../assets/images/car/car1.jpeg'),
       status: 'available',
     },
     {
@@ -34,7 +34,7 @@ export default function ManageVehiclesScreen() {
       name: 'Royal Enfield',
       type: 'bike',
       price: 800,
-      image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400',
+      image: require('../../assets/images/bike/royalenfield1.jpeg'),
       status: 'rented',
     },
     {
@@ -42,8 +42,24 @@ export default function ManageVehiclesScreen() {
       name: 'Hyundai Creta',
       type: 'car',
       price: 2000,
-      image: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400',
+      image: require('../../assets/images/car/car2.jpeg'),
       status: 'available',
+    },
+    {
+      id: '4',
+      name: 'BMW Series 3',
+      type: 'car',
+      price: 3500,
+      image: require('../../assets/images/car/bmw1.jpeg'),
+      status: 'available',
+    },
+    {
+      id: '5',
+      name: 'KTM Duke',
+      type: 'bike',
+      price: 900,
+      image: require('../../assets/images/bike/duke1.jpeg'),
+      status: 'rented',
     },
   ];
 
@@ -108,7 +124,7 @@ export default function ManageVehiclesScreen() {
                 <View className="flex-row space-x-4">
                   {/* Vehicle Image */}
                   <Image
-                    source={{ uri: vehicle.image }}
+                    source={typeof vehicle.image === 'string' ? { uri: vehicle.image } : vehicle.image}
                     className="w-24 h-24 rounded-lg"
                     resizeMode="cover"
                   />

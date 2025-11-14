@@ -1,7 +1,7 @@
 // Vehicle Card Component
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageSourcePropType, Text, TouchableOpacity, View } from 'react-native';
 import Card from './card';
 
 export interface Vehicle {
@@ -9,7 +9,7 @@ export interface Vehicle {
   name: string;
   type: 'car' | 'bike';
   price: number;
-  image: string;
+  image: string | ImageSourcePropType;
   fuel: string;
   gear: string;
   rating?: number;
@@ -29,7 +29,7 @@ export default function VehicleCard({ vehicle, onPress, className = '' }: Vehicl
           {/* Vehicle Image */}
           <View className="w-full h-40 bg-slate-100 rounded-lg overflow-hidden">
             <Image
-              source={{ uri: vehicle.image }}
+              source={typeof vehicle.image === 'string' ? { uri: vehicle.image } : vehicle.image}
               className="w-full h-full"
               resizeMode="cover"
             />

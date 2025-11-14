@@ -58,7 +58,7 @@ export default function AdminHomeScreen() {
               <Text className="text-white text-2xl font-bold">FlexiRide</Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.push('/login')}
+              onPress={() => router.replace('/' as any)}
               className="bg-white/20 rounded-full p-2"
             >
               <Ionicons name="log-out" size={24} color="#ffffff" />
