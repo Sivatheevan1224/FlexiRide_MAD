@@ -1,34 +1,81 @@
 // Profile Screen
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Card from '../components/ui/card';
+import { getCurrentUser, getCurrentUserData, signOut } from '../firebase/auth';
+import { getUserBookings } from '../firebase/bookings';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState({
+    name: 'User',
+    email: '',
+    avatar: '',
+  });
+  const [bookingStats, setBookingStats] = useState({ total: 0, upcoming: 0 });
 
-  const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+91 98765 43210',
-    avatar: 'https://ui-avatars.com/api/?name=John+Doe&size=200&background=2563eb&color=fff',
-  };
+  const loadUserData = useCallback(async () => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      const result = await getCurrentUserData(currentUser.uid);
+      if (result.success && result.userData) {
+        setUser({
+          name: result.userData.name || 'User',
+          email: result.userData.email || '',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.userData.name)}&size=200&background=2563eb&color=fff`,
+        });
+
+        // Load booking stats
+        const bookingsResult = await getUserBookings(currentUser.uid);
+        if (bookingsResult.success && bookingsResult.bookings) {
+          const total = bookingsResult.bookings.length;
+          const upcoming = bookingsResult.bookings.filter(b => b.status === 'active' || b.status === 'pending').length;
+          setBookingStats({ total, upcoming });
+        }
+      }
+    }
+  }, []);
+
+  // Reload data every time screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+    }, [loadUserData])
+  );
 
   const menuItems = [
     { icon: 'person-outline', label: 'Edit Profile', route: '/edit-profile' },
-    { icon: 'card-outline', label: 'Payment Methods', route: '/payment-methods' },
-    { icon: 'notifications-outline', label: 'Notifications', route: '/notifications' },
     { icon: 'help-circle-outline', label: 'Help & Support', route: '/support' },
-    { icon: 'document-text-outline', label: 'Terms & Conditions', route: '/terms' },
-    { icon: 'shield-checkmark-outline', label: 'Privacy Policy', route: '/privacy' },
   ];
 
-  const handleLogout = () => {
-    // Add logout logic here
-    router.replace('/');
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            const result = await signOut();
+            setLoading(false);
+            
+            if (result.success) {
+              router.replace('/');
+            } else {
+              Alert.alert('Error', result.error || 'Failed to logout');
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -50,9 +97,6 @@ export default function ProfileScreen() {
                 source={{ uri: user.avatar }}
                 className="w-24 h-24 rounded-full border-4 border-white"
               />
-              <TouchableOpacity className="absolute bottom-0 right-0 bg-white rounded-full p-2">
-                <Ionicons name="camera" size={16} color="#2563eb" />
-              </TouchableOpacity>
             </View>
             <Text className="text-white text-xl font-bold">{user.name}</Text>
             <Text className="text-blue-100 text-sm mt-1">{user.email}</Text>
@@ -64,12 +108,12 @@ export default function ProfileScreen() {
           <Card>
             <View className="flex-row justify-around">
               <View className="items-center">
-                <Text className="text-blue-600 font-bold text-2xl">12</Text>
+                <Text className="text-blue-600 font-bold text-2xl">{bookingStats.total}</Text>
                 <Text className="text-neutral-500 text-sm">Total Trips</Text>
               </View>
               <View className="w-px bg-slate-200" />
               <View className="items-center">
-                <Text className="text-blue-600 font-bold text-2xl">3</Text>
+                <Text className="text-blue-600 font-bold text-2xl">{bookingStats.upcoming}</Text>
                 <Text className="text-neutral-500 text-sm">Upcoming</Text>
               </View>
               <View className="w-px bg-slate-200" />
@@ -91,15 +135,6 @@ export default function ProfileScreen() {
                 <View className="flex-1">
                   <Text className="text-neutral-500 text-xs">Email</Text>
                   <Text className="text-neutral-800 font-medium">{user.email}</Text>
-                </View>
-              </View>
-              <View className="flex-row items-center space-x-3">
-                <View className="bg-blue-50 rounded-full p-2">
-                  <Ionicons name="call-outline" size={20} color="#2563eb" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-neutral-500 text-xs">Phone</Text>
-                  <Text className="text-neutral-800 font-medium">{user.phone}</Text>
                 </View>
               </View>
             </View>
@@ -131,6 +166,7 @@ export default function ProfileScreen() {
             variant="outline"
             size="lg"
             className="border-red-500"
+            loading={loading}
           />
 
           <View className="h-4" />

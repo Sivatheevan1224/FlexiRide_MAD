@@ -64,7 +64,7 @@ export default function VehicleCard({ vehicle, onPress, className = '' }: Vehicl
             {/* Price */}
             <View className="flex-row items-center justify-between pt-2 border-t border-slate-200">
               <View>
-                <Text className="text-blue-600 font-bold text-xl">₹{vehicle.price}</Text>
+                <Text className="text-blue-600 font-bold text-xl">Rs. {vehicle.price}</Text>
                 <Text className="text-neutral-500 text-xs">per day</Text>
               </View>
               <View className="bg-blue-600 px-4 py-2 rounded-lg">

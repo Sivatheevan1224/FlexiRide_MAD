@@ -1,45 +1,63 @@
 // My Bookings Screen
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BookingCard, { Booking } from '../components/ui/booking-card';
+import { getCurrentUser } from '../firebase/auth';
+import { getUserBookings } from '../firebase/bookings';
+import { getVehicleById } from '../firebase/vehicles';
 
 export default function MyBookingsScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample bookings data
-  const bookings: Booking[] = [
-    {
-      id: '1',
-      vehicleName: 'Honda City',
-      vehicleImage: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
-      pickupDate: '15 Nov 2025',
-      returnDate: '20 Nov 2025',
-      totalPrice: 7600,
-      status: 'confirmed',
-    },
-    {
-      id: '2',
-      vehicleName: 'Royal Enfield',
-      vehicleImage: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400',
-      pickupDate: '10 Nov 2025',
-      returnDate: '12 Nov 2025',
-      totalPrice: 1700,
-      status: 'completed',
-    },
-    {
-      id: '3',
-      vehicleName: 'Hyundai Creta',
-      vehicleImage: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400',
-      pickupDate: '25 Nov 2025',
-      returnDate: '28 Nov 2025',
-      totalPrice: 6100,
-      status: 'pending',
-    },
-  ];
+  useEffect(() => {
+    loadBookings();
+  }, []);
+
+  const loadBookings = async () => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    const result = await getUserBookings(currentUser.uid);
+    
+    if (result.success && result.bookings) {
+      // Fetch vehicle details for each booking to get images
+      const bookingsWithImages = await Promise.all(
+        result.bookings.map(async (booking) => {
+          let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
+          
+          if (booking.vehicleId) {
+            const vehicleResult = await getVehicleById(booking.vehicleId);
+            if (vehicleResult.success && vehicleResult.vehicle) {
+              vehicleImage = vehicleResult.vehicle.imageUrl || vehicleImage;
+            }
+          }
+
+          return {
+            id: booking.id || '',
+            vehicleName: booking.vehicleName || 'Vehicle',
+            vehicleImage: vehicleImage,
+            pickupDate: new Date(booking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            returnDate: new Date(booking.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            totalPrice: booking.totalPrice,
+            status: booking.status === 'active' ? 'confirmed' : booking.status === 'completed' ? 'completed' : 'pending',
+          };
+        })
+      );
+      
+      setBookings(bookingsWithImages);
+    }
+    setLoading(false);
+  };
 
   const filteredBookings = bookings.filter((booking) => {
     if (activeTab === 'all') return true;
@@ -83,7 +101,12 @@ export default function MyBookingsScreen() {
         </View>
 
         <View className="px-6 py-6">
-          {filteredBookings.length > 0 ? (
+          {loading ? (
+            <View className="items-center justify-center py-12">
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text className="text-neutral-500 mt-4">Loading bookings...</Text>
+            </View>
+          ) : filteredBookings.length > 0 ? (
             <View className="space-y-4">
               {filteredBookings.map((booking) => (
                 <BookingCard key={booking.id} booking={booking} />
