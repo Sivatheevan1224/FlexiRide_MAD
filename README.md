@@ -1,224 +1,115 @@
-# FlexiRide - Car & Bike Rental System# FlexiRide - Car & Bike Rental System# FlexiRide - Car & Bike Rental System
-
-
-
-A modern, clean, and minimal mobile application for car and bike rentals built with React Native, Expo, and NativeWind (TailwindCSS).
-
-
-
-## 🚀 FeaturesA modern, clean, and minimal mobile application for car and bike rentals built with React Native, Expo, and NativeWind (TailwindCSS).A modern, clean, and minimal mobile application for car and bike rentals built with React Native, Expo, and NativeWind (TailwindCSS).
-
-
-
-### User Features
-
-- **Welcome Screen** - Landing page with auto-sliding image carousel
-
-- **Authentication** - Signup and Login screens with demo credentials## 🚀 Features## 🚀 Features
-
-- **Home Screen** - Browse vehicles with search and filter (All/Cars/Bikes)
-
-- **Vehicle Details** - View detailed specs, select dates, and book
-
-- **Booking System** - Easy booking flow with price calculation
-
-- **My Bookings** - Track bookings with status indicators### User Features### User Features
-
-- **User Profile** - Manage account and settings
-
-- **Welcome Screen** - Landing page with features and "Get Started" button- **Splash Screen** - Clean animated splash screen with app logo
-
-### Admin Features
-
-- **Admin Dashboard** - Statistics overview with quick actions- **Authentication** - Signup and Login screens with demo credentials- **Authentication** - Signup and Login screens with form validation
-
-- **Add Vehicle** - Add new vehicles with image upload
-
-- **Manage Vehicles** - View, edit, and delete vehicles (with local images)- **Home Screen** - Browse vehicles with search and filter (All/Cars/Bikes)- **Home Screen** - Browse available vehicles with search and filter options
-
-- **View Bookings** - Manage all bookings with approve/reject
-
-- **Vehicle Details** - View detailed specs, select dates, and book- **Vehicle Details** - View detailed information about vehicles with specs
-
-## 🎨 Design Features
-
-- **Booking System** - Easy booking flow with price calculation- **Booking System** - Easy booking flow with date selection and price calculation
-
-- ✅ Clean & Modern UI with TailwindCSS
-
-- ✅ Rounded components (rounded-xl, rounded-full)- **My Bookings** - Track bookings with status indicators- **My Bookings** - Track all your bookings with status indicators
-
-- ✅ Proper spacing (p-4, space-y-3, gap-4)
-
-- ✅ Card layouts with shadows- **User Profile** - Manage account and settings- **User Profile** - Manage account information and settings
-
-- ✅ Blue theme (#2563eb) with neutral accents
-
-- ✅ Auto-sliding image carousel on welcome screen
-
-- ✅ Mobile-first responsive design
-
-- ✅ Web-optimized with device frame simulation### Admin Features### Admin Features
-
-- ✅ Ionicons throughout
-
-- **Admin Dashboard** - Statistics overview with quick actions- **Admin Dashboard** - Overview of all system statistics
-
-## 📱 Quick Start
-
-- **Add Vehicle** - Add new vehicles with image upload- **Add Vehicle** - Add new vehicles with image upload
-
-### Installation
-
-```bash- **Manage Vehicles** - View, edit, and delete vehicles- **Manage Vehicles** - View, edit, and delete vehicles
-
-npm install
-
-```- **View Bookings** - Manage all bookings with approve/reject- **View Bookings** - Manage all user bookings with approval system
-
-
-
-### Run on Mobile (Recommended)
-
-```bash
-
-npm start## 🎨 Design Features## 🎨 Design Features
-
-# Then scan QR code with Expo Go app
-
-# Or press 'a' for Android, 'i' for iOS
-
-```
-
-- ✅ Clean & Modern UI with TailwindCSS- **Clean & Modern UI** - Minimal design with TailwindCSS styling
-
-### Run on Web (Desktop Preview)
-
-```bash- ✅ Rounded components (rounded-xl, rounded-full)- **Rounded Components** - Smooth rounded corners throughout
-
-npm start
-
-# Press 'w' to open in browser- ✅ Proper spacing (p-4, space-y-3, gap-4)- **Proper Spacing** - Consistent padding and margins using Tailwind spacing
-
-# App displays in mobile-centered view with device frame
-
-```- ✅ Card layouts with shadows- **Card Layouts** - Beautiful card-based designs with shadows
-
-
-
-### Platform Support- ✅ Blue theme (#2563eb) with neutral accents- **Color Scheme** - Blue primary color (#2563eb) with neutral accents
-
-- ✅ **iOS** - Optimized for iPhone & iPad
-
-- ✅ **Android** - Optimized for all Android devices  - ✅ Mobile-first responsive design- **Responsive** - Mobile-first design optimized for all screen sizes
-
-- ✅ **Web** - Desktop preview with mobile simulation
-
-- ✅ Ionicons throughout- **Icons** - Ionicons for clean, consistent iconography
-
-**Best experience:** Physical mobile devices or emulators
-
-
-
-### Test Credentials
-
-**User Login:**## 📱 Quick Start## 📱 Screens
-
-- Email: `user@test.com`
-
-- Password: `password123`
-
-
-
-**Admin Login:**### Installation### Authentication
-
-- Email: `admin@test.com`
-
-- Password: `admin123````bash- ✅ Splash Screen (`app/index.tsx`)
-
-
-
-## 📱 Screens (13 Total)npm install- ✅ Signup Screen (`app/signup.tsx`)
-
-
-
-### Authentication (3)npm start- ✅ Login Screen (`app/login.tsx`)
-
-- Welcome Screen with Image Slider (`app/index.tsx`)
-
-- Login (`app/login.tsx`)```
-
-- Signup (`app/signup.tsx`)
-
-### User Screens
-
-### User Screens (6)
-
-- Home (`app/home.tsx`)### Test Credentials- ✅ Home Screen (`app/home.tsx`)
-
-- Vehicle Details (`app/vehicle-details.tsx`)
-
-- Booking (`app/booking.tsx`)**User Login:**- ✅ Vehicle Details (`app/vehicle-details.tsx`)
-
-- Booking Success (`app/booking-success.tsx`)
-
-- My Bookings (`app/my-bookings.tsx`)- Email: `user@test.com`- ✅ Booking Screen (`app/booking.tsx`)
-
-- Profile (`app/profile.tsx`)
-
-- Password: `password123`- ✅ Booking Success (`app/booking-success.tsx`)
-
-### Admin Screens (4)
-
-- Dashboard (`app/admin/home.tsx`)- ✅ My Bookings (`app/my-bookings.tsx`)
-
-- Add Vehicle (`app/admin/add-vehicle.tsx`)
-
-- Manage Vehicles (`app/admin/manage-vehicles.tsx`)**Admin Login:**- ✅ Profile Screen (`app/profile.tsx`)
-
-- View Bookings (`app/admin/view-bookings.tsx`)
-
-- Email: `admin@test.com`
-
-## 🧩 UI Components
-
-- Password: `admin123`### Admin Screens
-
-Located in `components/ui/`:
-
-- ✅ Admin Home (`app/admin/home.tsx`)
-
-- **Button** - 3 variants (primary, secondary, outline), 3 sizes, loading state
-
-- **Input** - Icons, validation, password toggle, multiline support## 📱 Screens (13 Total)- ✅ Add Vehicle (`app/admin/add-vehicle.tsx`)
-
-- **Card** - Flexible padding (sm, md, lg) with shadows
-
-- **VehicleCard** - Vehicle display with image, specs, and price- ✅ Manage Vehicles (`app/admin/manage-vehicles.tsx`)
-
-- **BookingCard** - Booking info with status badges
-
-- **PlatformImage** - Smart image loading for web and mobile### Authentication (3)- ✅ View Bookings (`app/admin/view-bookings.tsx`)
-
-
-
-## 🛠️ Tech Stack- Welcome Screen (`app/index.tsx`)
-
-
-
-- React Native 0.81.5- Login (`app/login.tsx`)## 🧩 Reusable Components
-
-- Expo ~54.0.23
-
-- Expo Router ~6.0.14 (File-based routing)- Signup (`app/signup.tsx`)
-
-- NativeWind v2.0.11 (TailwindCSS for RN)
-
-- TypeScript ~5.9.2All components are located in `components/ui/`:
-
-- Expo Image Picker
-
-- React Native DateTime Picker### User Screens (6)
+# 🚗 FlexiRide - Vehicle Rental System
+
+A modern, full-featured mobile application for car and bike rentals built with **React Native**, **Expo**, and **Firebase**. FlexiRide provides a seamless rental experience with real-time booking management, admin controls, and a beautiful, responsive interface powered by NativeWind (TailwindCSS).
+
+## 📖 About The Project
+
+FlexiRide is a comprehensive vehicle rental platform designed to connect customers with a wide range of cars and bikes. The application offers an intuitive booking system, real-time availability tracking, and robust admin management tools.
+
+### Key Highlights
+
+- **Full-Stack Solution**: Complete mobile app with Firebase backend integration
+- **Real-Time Data**: Live updates on vehicle availability and booking status
+- **Role-Based Access**: Separate interfaces for customers and administrators
+- **Secure Authentication**: Firebase Authentication with email/password
+- **Cloud Storage**: Vehicle images stored in Firebase Storage
+- **Payment Integration**: Dummy payment gateway for demonstration
+- **Date Management**: Advanced date picker for booking periods
+- **Revenue Tracking**: Comprehensive analytics dashboard for admins
+
+### Built For
+
+This project was developed as part of a **Mobile Application Development (MAD)** course, demonstrating modern app development practices, cloud integration, and professional UI/UX design principles.
+
+
+
+## 🚀 Features
+
+### 👤 Customer Features
+
+- **🔐 Authentication System**
+  - Secure signup and login with Firebase Authentication
+  - Form validation and error handling
+  - Session management with persistent login
+
+- **🏠 Home Dashboard**
+  - Browse all available vehicles
+  - Filter by category (All/Cars/Bikes)
+  - Search functionality
+  - Real-time availability status
+
+- **📋 Vehicle Details**
+  - Comprehensive vehicle information
+  - Specifications (fuel type, transmission, seats)
+  - High-quality images
+  - Pricing per day
+  - Availability calendar
+
+- **📅 Booking System**
+  - Interactive date picker for pickup/return dates
+  - Automatic price calculation
+  - Payment form integration
+  - Booking confirmation
+  - Real-time availability check
+
+- **📱 My Bookings**
+  - View all personal bookings
+  - Track booking status (Pending, Confirmed, Completed, Cancelled)
+  - Booking history
+  - Vehicle details for each booking
+
+- **👤 User Profile**
+  - Account information management
+  - Profile editing
+  - Logout functionality
+
+### 🛡️ Admin Features
+
+- **📊 Admin Dashboard**
+  - Real-time statistics overview
+  - Total vehicles count
+  - Active bookings
+  - Total users
+  - Revenue tracking
+
+- **➕ Add Vehicle**
+  - Image upload with Firebase Storage
+  - Vehicle details form (name, type, price, specs)
+  - Automatic availability management
+
+- **🚗 Manage Vehicles**
+  - View all vehicles with tabs (All/Available/Rented)
+  - Edit vehicle details
+  - Delete vehicles
+  - Track rental status
+  - Real-time availability updates
+
+- **📋 View Bookings**
+  - Manage all customer bookings
+  - Approve pending bookings (marks vehicle as rented)
+  - Reject bookings (keeps vehicle available)
+  - Filter by status (All/Pending/Confirmed/Completed)
+  - Automatic vehicle availability sync
+
+- **💰 Revenue Dashboard**
+  - Total revenue from completed and active bookings
+  - Booking statistics (completed, active, pending, cancelled)
+  - Monthly revenue breakdown
+  - Average booking value
+  - Visual analytics
+
+### 🎨 Design Features
+
+- **Clean Modern UI** - Minimalist design with TailwindCSS
+- **Rounded Components** - Smooth rounded corners (rounded-xl, rounded-full)
+- **Consistent Spacing** - Professional padding and margins
+- **Card Layouts** - Beautiful card-based designs with shadows
+- **Color Scheme** - Blue primary (#2563eb) with neutral accents
+- **Responsive Design** - Optimized for all mobile screen sizes
+- **Icon System** - Ionicons throughout for consistent iconography
+- **Status Badges** - Color-coded status indicators
+- **Loading States** - Smooth loading animations
+- **Empty States** - Informative empty state messages
 
 
 

@@ -1,18 +1,23 @@
 // Add Vehicle Screen
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/ui/button';
 import Card from '../../components/ui/card';
 import Input from '../../components/ui/input';
+import { addVehicle, updateVehicle } from '../../firebase/vehicles';
 
 export default function AddVehicleScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
   const [vehicleImage, setVehicleImage] = useState<string | null>(null);
+  
+  // Check if editing
+  const isEditing = !!params.id;
   
   // Form states
   const [name, setName] = useState('');
@@ -22,6 +27,20 @@ export default function AddVehicleScreen() {
   const [gear, setGear] = useState('');
   const [seats, setSeats] = useState('');
   const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (isEditing) {
+      // Populate form with existing data
+      setName(params.name ? decodeURIComponent(params.name as string) : '');
+      setType((params.type as 'car' | 'bike') || 'car');
+      setPrice(params.price as string || '');
+      setVehicleImage(params.image ? decodeURIComponent(params.image as string) : null);
+      setFuel(params.fuel ? decodeURIComponent(params.fuel as string) : '');
+      setGear(params.gear ? decodeURIComponent(params.gear as string) : '');
+      setSeats(params.seats as string || '');
+      setDescription(params.description ? decodeURIComponent(params.description as string) : '');
+    }
+  }, [params]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -37,12 +56,39 @@ export default function AddVehicleScreen() {
   };
 
   const handleSave = async () => {
+    if (!name || !price || !fuel || !gear) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
     setLoading(true);
-    // Add your save logic here
-    setTimeout(() => {
-      setLoading(false);
+    
+    const vehicleData = {
+      name,
+      type,
+      pricePerDay: parseInt(price),
+      imageUrl: vehicleImage || 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
+      fuelType: fuel,
+      transmission: gear,
+      seats: seats ? parseInt(seats) : undefined,
+      description,
+      availability: true,
+    };
+
+    let result;
+    if (isEditing) {
+      result = await updateVehicle(params.id as string, vehicleData);
+    } else {
+      result = await addVehicle(vehicleData);
+    }
+
+    setLoading(false);
+    if (result.success) {
+      Alert.alert('Success', isEditing ? 'Vehicle updated successfully' : 'Vehicle added successfully');
       router.back();
-    }, 1500);
+    } else {
+      Alert.alert('Error', result.error || 'Failed to add vehicle');
+    }
   };
 
   return (
@@ -54,7 +100,7 @@ export default function AddVehicleScreen() {
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
-            <Text className="text-white text-2xl font-bold">Add Vehicle</Text>
+            <Text className="text-white text-2xl font-bold">{isEditing ? 'Edit Vehicle' : 'Add Vehicle'}</Text>
           </View>
         </View>
 
@@ -129,7 +175,7 @@ export default function AddVehicleScreen() {
               </View>
 
               <Input
-                label="Price per Day (₹)"
+                label="Price per Day (Rs.)"
                 placeholder="e.g., 1500"
                 value={price}
                 onChangeText={setPrice}
@@ -183,7 +229,12 @@ export default function AddVehicleScreen() {
           </Card>
 
           {/* Save Button */}
-          <Button title="Save Vehicle" onPress={handleSave} size="lg" loading={loading} />
+          <Button 
+            title={isEditing ? "Update Vehicle" : "Save Vehicle"} 
+            onPress={handleSave} 
+            size="lg" 
+            loading={loading} 
+          />
 
           <View className="h-4" />
         </View>

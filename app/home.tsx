@@ -1,119 +1,54 @@
 // Home Screen
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import VehicleCard, { Vehicle } from '../components/ui/vehicle-card';
+import { getCurrentUser, getCurrentUserData } from '../firebase/auth';
+import { getAllVehicles } from '../firebase/vehicles';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'cars' | 'bikes'>('all');
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('User');
 
-  // Sample data - replace with actual API call
-  const vehicles: Vehicle[] = [
-    {
-      id: '1',
-      name: 'Honda City',
-      type: 'car',
-      price: 1500,
-      image: require('../assets/images/car/car1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Automatic',
-      rating: 4.8,
-    },
-    {
-      id: '2',
-      name: 'Royal Enfield',
-      type: 'bike',
-      price: 800,
-      image: require('../assets/images/bike/royalenfield1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.6,
-    },
-    {
-      id: '3',
-      name: 'Hyundai Creta',
-      type: 'car',
-      price: 2000,
-      image: require('../assets/images/car/car2.jpeg'),
-      fuel: 'Diesel',
-      gear: 'Automatic',
-      rating: 4.9,
-    },
-    {
-      id: '4',
-      name: 'Yamaha R15',
-      type: 'bike',
-      price: 600,
-      image: require('../assets/images/bike/bike1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.7,
-    },
-    {
-      id: '5',
-      name: 'BMW Series 3',
-      type: 'car',
-      price: 3500,
-      image: require('../assets/images/car/bmw1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Automatic',
-      rating: 4.9,
-    },
-    {
-      id: '6',
-      name: 'KTM Duke',
-      type: 'bike',
-      price: 900,
-      image: require('../assets/images/bike/duke1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.8,
-    },
-    {
-      id: '7',
-      name: 'Maruti Swift',
-      type: 'car',
-      price: 1200,
-      image: require('../assets/images/car/car3.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.5,
-    },
-    {
-      id: '8',
-      name: 'Bajaj Pulsar',
-      type: 'bike',
-      price: 500,
-      image: require('../assets/images/bike/pulsar1.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.4,
-    },
-    {
-      id: '9',
-      name: 'Toyota Innova',
-      type: 'car',
-      price: 2500,
-      image: require('../assets/images/car/car4.jpeg'),
-      fuel: 'Diesel',
-      gear: 'Manual',
-      rating: 4.7,
-    },
-    {
-      id: '10',
-      name: 'Hero Honda',
-      type: 'bike',
-      price: 400,
-      image: require('../assets/images/bike/herohonda.jpeg'),
-      fuel: 'Petrol',
-      gear: 'Manual',
-      rating: 4.3,
-    },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    
+    // Load user data
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      const userResult = await getCurrentUserData(currentUser.uid);
+      if (userResult.success && userResult.userData) {
+        setUserName(userResult.userData.name || 'User');
+      }
+    }
+
+    // Load vehicles
+    const vehiclesResult = await getAllVehicles();
+    if (vehiclesResult.success && vehiclesResult.vehicles) {
+      const formattedVehicles: Vehicle[] = vehiclesResult.vehicles.map(v => ({
+        id: v.id || '',
+        name: v.name,
+        type: v.type,
+        price: v.pricePerDay,
+        image: v.imageUrl || 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
+        fuel: v.fuelType || 'Petrol',
+        gear: v.transmission || 'Manual',
+        rating: 4.5,
+      }));
+      setVehicles(formattedVehicles);
+    }
+    setLoading(false);
+  };
 
   const filteredVehicles = vehicles.filter((vehicle) => {
     if (activeTab === 'all') return true;
@@ -128,7 +63,7 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-center mb-6">
             <View>
               <Text className="text-blue-100 text-sm">Welcome back,</Text>
-              <Text className="text-white text-2xl font-bold">John Doe</Text>
+              <Text className="text-white text-2xl font-bold">{userName}</Text>
             </View>
             <TouchableOpacity
               onPress={() => router.push('/profile')}
@@ -182,15 +117,22 @@ export default function HomeScreen() {
           </View>
 
           {/* Vehicle Grid */}
-          <View className="space-y-4 pb-6">
-            {filteredVehicles.map((vehicle) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-                onPress={() => router.push(`/vehicle-details?id=${vehicle.id}`)}
-              />
-            ))}
-          </View>
+          {loading ? (
+            <View className="py-12">
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text className="text-center text-neutral-500 mt-4">Loading vehicles...</Text>
+            </View>
+          ) : (
+            <View className="space-y-4 pb-6">
+              {filteredVehicles.map((vehicle) => (
+                <VehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  onPress={() => router.push(`/vehicle-details?id=${vehicle.id}`)}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 

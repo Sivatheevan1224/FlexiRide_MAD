@@ -2,10 +2,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Input from '../components/ui/input';
+import { signUp } from '../firebase/auth';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -16,14 +17,56 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
     setLoading(true);
     
-    // Demo signup logic - In production, replace with actual registration
-    setTimeout(() => {
+    try {
+      // Use Firebase authentication
+      const result = await signUp(email, password, name);
+      
+      if (result.success && result.userData) {
+        console.log('Signup successful:', result.userData);
+        Alert.alert(
+          'Success', 
+          'Account created successfully!',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Navigate based on role
+                if (result.userData!.role === 'admin') {
+                  router.replace('/admin/home' as any);
+                } else {
+                  router.replace('/home' as any);
+                }
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Signup Failed', result.error || 'Failed to create account');
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      Alert.alert('Error', error.message || 'An error occurred during signup');
+    } finally {
       setLoading(false);
-      // After signup, direct to user home (normal user flow)
-      router.replace('/home' as any);
-    }, 1500);
+    }
   };
 
   return (
@@ -51,10 +94,10 @@ export default function SignupScreen() {
           <View className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
             <View className="flex-row items-center mb-2">
               <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
-              <Text className="text-green-800 font-semibold text-sm ml-2">Quick Demo</Text>
+              <Text className="text-green-800 font-semibold text-sm ml-2">Firebase Authentication</Text>
             </View>
             <Text className="text-green-700 text-xs leading-5">
-              For demo purposes, any credentials will work! After signup, you'll be logged in as a normal user. To test admin features, use the login page with admin credentials.
+              Your account will be securely created with Firebase. Admins are automatically detected if your email contains "admin".
             </Text>
           </View>
 
