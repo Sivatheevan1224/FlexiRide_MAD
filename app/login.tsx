@@ -74,23 +74,23 @@ export default function LoginScreen() {
           <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <View className="flex-row items-center mb-2">
               <Ionicons name="information-circle" size={20} color="#2563eb" />
-              <Text className="text-blue-800 font-semibold text-sm ml-2">Test Credentials</Text>
+              <Text className="text-blue-800 font-semibold text-sm ml-2">Demo Accounts</Text>
             </View>
             
             <Text className="text-blue-700 text-xs leading-5 mb-2">
-              Use these accounts to test the app:
+              For testing purposes, use the credentials provided separately.
             </Text>
             
             <View className="bg-white rounded-lg p-3 mb-2">
               <Text className="text-neutral-600 text-xs mb-1">👤 User Account:</Text>
               <Text className="text-neutral-800 font-medium text-sm">user@flexiride.com</Text>
-              <Text className="text-neutral-500 text-xs">Password: REMOVED_SECRET</Text>
+              <Text className="text-neutral-500 text-xs">Contact admin for password</Text>
             </View>
             
             <View className="bg-white rounded-lg p-3">
               <Text className="text-neutral-600 text-xs mb-1">👨‍💼 Admin Account:</Text>
               <Text className="text-neutral-800 font-medium text-sm">admin@flexiride.com</Text>
-              <Text className="text-neutral-500 text-xs">Password: REMOVED_SECRET</Text>
+              <Text className="text-neutral-500 text-xs">Contact admin for password</Text>
             </View>
           </View>
 
