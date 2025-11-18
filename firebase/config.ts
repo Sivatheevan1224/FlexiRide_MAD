@@ -9,7 +9,7 @@ import { getStorage } from 'firebase/storage';
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAQHfpgv5E7QFacGZI3_cIkcfp1PB7SM5c",
+  apiKey: "",
   authDomain: "flexiride-4e206.firebaseapp.com",
   projectId: "flexiride-4e206",
   storageBucket: "flexiride-4e206.firebasestorage.app",
