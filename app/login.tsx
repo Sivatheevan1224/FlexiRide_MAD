@@ -2,10 +2,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Input from '../components/ui/input';
+import { signIn } from '../firebase/auth';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -14,33 +15,38 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    // Validation
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
     
-    // Demo login logic - In production, replace with actual authentication
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Use Firebase authentication
+      const result = await signIn(email, password);
       
-      // Check for admin credentials first
-      if (email.toLowerCase() === 'admin@test.com' && password === 'admin123') {
-        console.log('Navigating to Admin Dashboard');
-        router.replace('/admin/home' as any);
-      } 
-      // Normal user login
-      else if (email.toLowerCase() === 'user@test.com' && password === 'password123') {
-        console.log('Navigating to User Home');
-        router.replace('/home' as any);
+      if (result.success && result.userData) {
+        console.log('Login successful:', result.userData);
+        
+        // Navigate based on user role
+        if (result.userData.role === 'admin') {
+          console.log('Navigating to Admin Dashboard');
+          router.replace('/admin/home' as any);
+        } else {
+          console.log('Navigating to User Home');
+          router.replace('/home' as any);
+        }
+      } else {
+        Alert.alert('Login Failed', result.error || 'Invalid credentials');
       }
-      // Allow any email with 'admin' for quick testing
-      else if (email.toLowerCase().includes('admin')) {
-        console.log('Navigating to Admin Dashboard (contains admin)');
-        router.replace('/admin/home' as any);
-      }
-      // Default to user home for any other credentials
-      else {
-        console.log('Navigating to User Home (default)');
-        router.replace('/home' as any);
-      }
-    }, 1500);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert('Error', error.message || 'An error occurred during login');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,19 +74,23 @@ export default function LoginScreen() {
           <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <View className="flex-row items-center mb-2">
               <Ionicons name="information-circle" size={20} color="#2563eb" />
-              <Text className="text-blue-800 font-semibold text-sm ml-2">Demo Credentials</Text>
+              <Text className="text-blue-800 font-semibold text-sm ml-2">Test Credentials</Text>
             </View>
             
+            <Text className="text-blue-700 text-xs leading-5 mb-2">
+              Use these accounts to test the app:
+            </Text>
+            
             <View className="bg-white rounded-lg p-3 mb-2">
-              <Text className="text-neutral-600 text-xs mb-1">👤 Normal User:</Text>
-              <Text className="text-neutral-800 font-medium text-sm">Email: user@test.com</Text>
-              <Text className="text-neutral-800 font-medium text-sm">Password: password123</Text>
+              <Text className="text-neutral-600 text-xs mb-1">👤 User Account:</Text>
+              <Text className="text-neutral-800 font-medium text-sm">user@flexiride.com</Text>
+              <Text className="text-neutral-500 text-xs">Password: User123!</Text>
             </View>
             
             <View className="bg-white rounded-lg p-3">
-              <Text className="text-neutral-600 text-xs mb-1">👨‍💼 Admin User:</Text>
-              <Text className="text-neutral-800 font-medium text-sm">Email: admin@test.com</Text>
-              <Text className="text-neutral-800 font-medium text-sm">Password: admin123</Text>
+              <Text className="text-neutral-600 text-xs mb-1">👨‍💼 Admin Account:</Text>
+              <Text className="text-neutral-800 font-medium text-sm">admin@flexiride.com</Text>
+              <Text className="text-neutral-500 text-xs">Password: Admin123!</Text>
             </View>
           </View>
 

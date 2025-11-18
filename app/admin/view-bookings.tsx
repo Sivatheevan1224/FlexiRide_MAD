@@ -1,56 +1,134 @@
 // View Bookings Screen (Admin)
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BookingCard, { Booking } from '../../components/ui/booking-card';
 import Button from '../../components/ui/button';
 import Card from '../../components/ui/card';
+import { getAllBookings, updateBookingStatus } from '../../firebase/bookings';
+import { getVehicleById } from '../../firebase/vehicles';
 
 export default function ViewBookingsScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'confirmed' | 'completed'>('all');
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // Sample bookings data
-  const bookings: Booking[] = [
-    {
-      id: '1',
-      vehicleName: 'Honda City',
-      vehicleImage: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
-      pickupDate: '15 Nov 2025',
-      returnDate: '20 Nov 2025',
-      totalPrice: 7600,
-      status: 'confirmed',
-    },
-    {
-      id: '2',
-      vehicleName: 'Royal Enfield',
-      vehicleImage: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400',
-      pickupDate: '18 Nov 2025',
-      returnDate: '20 Nov 2025',
-      totalPrice: 1700,
-      status: 'pending',
-    },
-    {
-      id: '3',
-      vehicleName: 'Hyundai Creta',
-      vehicleImage: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400',
-      pickupDate: '10 Nov 2025',
-      returnDate: '12 Nov 2025',
-      totalPrice: 4100,
-      status: 'completed',
-    },
-    {
-      id: '4',
-      vehicleName: 'Yamaha R15',
-      vehicleImage: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=400',
-      pickupDate: '20 Nov 2025',
-      returnDate: '22 Nov 2025',
-      totalPrice: 1300,
-      status: 'pending',
-    },
-  ];
+  useEffect(() => {
+    loadBookings();
+  }, []);
+
+  const loadBookings = async () => {
+    setLoading(true);
+    const result = await getAllBookings();
+    
+    if (result.success && result.bookings) {
+      // Fetch vehicle details for each booking to get images
+      const bookingsWithImages = await Promise.all(
+        result.bookings.map(async (booking) => {
+          let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
+          
+          if (booking.vehicleId) {
+            const vehicleResult = await getVehicleById(booking.vehicleId);
+            if (vehicleResult.success && vehicleResult.vehicle) {
+              vehicleImage = vehicleResult.vehicle.imageUrl || vehicleImage;
+            }
+          }
+
+          return {
+            id: booking.id || '',
+            vehicleName: booking.vehicleName || 'Vehicle',
+            vehicleImage: vehicleImage,
+            pickupDate: new Date(booking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            returnDate: new Date(booking.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            totalPrice: booking.totalPrice,
+            status: booking.status === 'active' ? 'confirmed' : 
+                    booking.status === 'completed' ? 'completed' : 
+                    booking.status === 'cancelled' ? 'cancelled' : 'pending',
+          };
+        })
+      );
+      
+      setBookings(bookingsWithImages);
+    }
+    setLoading(false);
+  };
+
+  const handleApprove = async (bookingId: string) => {
+    Alert.alert(
+      'Approve Booking',
+      'Are you sure you want to approve this booking?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Approve',
+          onPress: async () => {
+            setProcessingId(bookingId);
+            
+            // Get booking to find vehicle ID
+            const booking = bookings.find(b => b.id === bookingId);
+            const allBookingsResult = await getAllBookings();
+            const fullBooking = allBookingsResult.bookings?.find(b => b.id === bookingId);
+            
+            const result = await updateBookingStatus(bookingId, 'active');
+            
+            if (result.success && fullBooking?.vehicleId) {
+              // Update vehicle availability to false (rented)
+              const { updateVehicle } = await import('../../firebase/vehicles');
+              await updateVehicle(fullBooking.vehicleId, { availability: false });
+              
+              Alert.alert('Success', 'Booking approved and vehicle marked as rented');
+              loadBookings(); // Reload bookings
+            } else if (result.success) {
+              Alert.alert('Success', 'Booking approved successfully');
+              loadBookings();
+            } else {
+              Alert.alert('Error', result.error || 'Failed to approve booking');
+            }
+            setProcessingId(null);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleReject = async (bookingId: string) => {
+    Alert.alert(
+      'Reject Booking',
+      'Are you sure you want to reject this booking?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: async () => {
+            setProcessingId(bookingId);
+            
+            // Get booking to find vehicle ID
+            const allBookingsResult = await getAllBookings();
+            const fullBooking = allBookingsResult.bookings?.find(b => b.id === bookingId);
+            
+            const result = await updateBookingStatus(bookingId, 'cancelled');
+            
+            if (result.success && fullBooking?.vehicleId) {
+              // Update vehicle availability to true (available again)
+              const { updateVehicle } = await import('../../firebase/vehicles');
+              await updateVehicle(fullBooking.vehicleId, { availability: true });
+              
+              Alert.alert('Success', 'Booking rejected and vehicle marked as available');
+              loadBookings(); // Reload bookings
+            } else {
+              Alert.alert('Error', result.error || 'Failed to reject booking');
+            }
+            setProcessingId(null);
+          },
+        },
+      ]
+    );
+  };
 
   const filteredBookings = bookings.filter((booking) => {
     if (activeTab === 'all') return true;
@@ -133,20 +211,24 @@ export default function ViewBookingsScreen() {
                   {/* Admin Actions */}
                   {booking.status === 'pending' && (
                     <View className="flex-row space-x-2 mt-2">
-                      <Button
-                        title="Approve"
-                        onPress={() => {}}
-                        variant="primary"
-                        size="sm"
-                        className="flex-1"
-                      />
-                      <Button
-                        title="Reject"
-                        onPress={() => {}}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 border-red-500"
-                      />
+                      <View className="flex-1">
+                        <Button
+                          title="Approve"
+                          onPress={() => handleApprove(booking.id)}
+                          variant="primary"
+                          size="sm"
+                          loading={processingId === booking.id}
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <Button
+                          title="Reject"
+                          onPress={() => handleReject(booking.id)}
+                          variant="outline"
+                          size="sm"
+                          loading={processingId === booking.id}
+                        />
+                      </View>
                     </View>
                   )}
                 </View>
