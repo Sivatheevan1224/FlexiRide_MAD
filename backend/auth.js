@@ -7,7 +7,7 @@ const { auth, db } = require('./config');
 const fetch = global.fetch || require('node-fetch');
 
 // Your Firebase Web API Key from Firebase Console
-const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY || 'AIzaSyAQHfpgv5E7QFacGZI3_cIkcfp1PB7SM5c';
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY ;
 
 /**
  * Create a new user (admin SDK) and add a Firestore user document

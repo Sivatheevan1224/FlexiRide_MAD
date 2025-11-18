@@ -43,7 +43,7 @@ Create `.env` file in `backend/` folder:
 
 ```bash
 GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
-FIREBASE_API_KEY=AIzaSyAQHfpgv5E7QFacGZI3_cIkcfp1PB7SM5c
+FIREBASE_API_KEY=
 FIREBASE_STORAGE_BUCKET=flexiride-4e206.firebasestorage.app
 ```
 
