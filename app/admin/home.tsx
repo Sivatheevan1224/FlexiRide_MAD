@@ -1,20 +1,62 @@
 // Admin Home Screen
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { collection, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../../components/ui/card';
+import { signOut } from '../../firebase/auth';
+import { getAllBookings } from '../../firebase/bookings';
+import { db } from '../../firebase/config';
+import { getAllVehicles } from '../../firebase/vehicles';
 
 export default function AdminHomeScreen() {
   const router = useRouter();
+  const [stats, setStats] = useState([
+    { label: 'Total Vehicles', value: '0', icon: 'car-sport', color: 'bg-blue-500' },
+    { label: 'Active Bookings', value: '0', icon: 'calendar', color: 'bg-green-500' },
+    { label: 'Total Users', value: '0', icon: 'people', color: 'bg-purple-500' },
+    { label: 'Revenue', value: 'Rs. 0', icon: 'cash', color: 'bg-yellow-500' },
+  ]);
 
-  const stats = [
-    { label: 'Total Vehicles', value: '24', icon: 'car-sport', color: 'bg-blue-500' },
-    { label: 'Active Bookings', value: '12', icon: 'calendar', color: 'bg-green-500' },
-    { label: 'Total Users', value: '156', icon: 'people', color: 'bg-purple-500' },
-    { label: 'Revenue', value: '₹45K', icon: 'cash', color: 'bg-yellow-500' },
-  ];
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    // Load vehicles
+    const vehiclesResult = await getAllVehicles();
+    const totalVehicles = vehiclesResult.success && vehiclesResult.vehicles ? vehiclesResult.vehicles.length : 0;
+
+    // Load bookings
+    const bookingsResult = await getAllBookings();
+    let activeBookings = 0;
+    let revenue = 0;
+
+    if (bookingsResult.success && bookingsResult.bookings) {
+      activeBookings = bookingsResult.bookings.filter(b => b.status === 'active' || b.status === 'pending').length;
+      revenue = bookingsResult.bookings
+        .filter(b => b.status === 'completed' || b.status === 'active')
+        .reduce((sum, b) => sum + b.totalPrice, 0);
+    }
+
+    // Load users count
+    let totalUsers = 0;
+    try {
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      totalUsers = usersSnapshot.size;
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+
+    setStats([
+      { label: 'Total Vehicles', value: totalVehicles.toString(), icon: 'car-sport', color: 'bg-blue-500' },
+      { label: 'Active Bookings', value: activeBookings.toString(), icon: 'calendar', color: 'bg-green-500' },
+      { label: 'Total Users', value: totalUsers.toString(), icon: 'people', color: 'bg-purple-500' },
+      { label: 'Revenue', value: `Rs. ${(revenue / 1000).toFixed(1)}K`, icon: 'cash', color: 'bg-yellow-500' },
+    ]);
+  };
 
   const menuItems = [
     {
@@ -39,6 +81,13 @@ export default function AdminHomeScreen() {
       color: 'bg-purple-600',
     },
     {
+      icon: 'cash',
+      title: 'Revenue Dashboard',
+      description: 'View earnings and statistics',
+      route: '/admin/revenue',
+      color: 'bg-yellow-600',
+    },
+    {
       icon: 'people',
       title: 'Manage Users',
       description: 'View and manage users',
@@ -58,7 +107,14 @@ export default function AdminHomeScreen() {
               <Text className="text-white text-2xl font-bold">FlexiRide</Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.replace('/' as any)}
+              onPress={async () => {
+                const result = await signOut();
+                if (result.success) {
+                  router.replace('/' as any);
+                } else {
+                  Alert.alert('Error', result.error || 'Failed to logout');
+                }
+              }}
               className="bg-white/20 rounded-full p-2"
             >
               <Ionicons name="log-out" size={24} color="#ffffff" />

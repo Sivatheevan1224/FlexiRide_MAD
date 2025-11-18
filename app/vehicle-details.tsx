@@ -1,33 +1,67 @@
 // Vehicle Details Screen
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Card from '../components/ui/card';
+import { getVehicleById } from '../firebase/vehicles';
 
 export default function VehicleDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [pickupDate, setPickupDate] = useState('');
-  const [returnDate, setReturnDate] = useState('');
+  const [vehicle, setVehicle] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Sample data - replace with actual API call based on params.id
-  const vehicle = {
-    id: params.id || '1',
-    name: 'Honda City',
-    type: 'car',
-    price: 1500,
-    image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600',
-    fuel: 'Petrol',
-    gear: 'Automatic',
-    seats: 5,
-    rating: 4.8,
-    reviews: 124,
-    description:
-      'The Honda City is a comfortable and reliable sedan perfect for city driving and long trips. Features include automatic transmission, powerful AC, and spacious interiors.',
+  useEffect(() => {
+    loadVehicle();
+  }, [params.id]);
+
+  const loadVehicle = async () => {
+    if (!params.id) return;
+    
+    setLoading(true);
+    const result = await getVehicleById(params.id as string);
+    
+    if (result.success && result.vehicle) {
+      const vehicleData = result.vehicle as any; // Cast to access additional fields
+      setVehicle({
+        id: result.vehicle.id,
+        name: result.vehicle.name,
+        type: result.vehicle.type,
+        price: result.vehicle.pricePerDay,
+        image: result.vehicle.imageUrl || 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600',
+        fuel: vehicleData.fuelType || vehicleData.fuel || 'Petrol',
+        gear: vehicleData.transmission || vehicleData.gear || 'Manual',
+        seats: result.vehicle.type === 'car' ? 5 : 2,
+        rating: 4.8,
+        reviews: 124,
+        description: result.vehicle.description || 'A reliable vehicle perfect for your journey.',
+      });
+    }
+    setLoading(false);
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-slate-50 justify-center items-center">
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text className="text-neutral-500 mt-4">Loading vehicle details...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <SafeAreaView className="flex-1 bg-slate-50 justify-center items-center px-6">
+        <Ionicons name="alert-circle" size={64} color="#ef4444" />
+        <Text className="text-neutral-800 text-xl font-bold mt-4">Vehicle Not Found</Text>
+        <Text className="text-neutral-500 text-center mt-2">Unable to load vehicle details</Text>
+        <Button title="Go Back" onPress={() => router.back()} className="mt-6" />
+      </SafeAreaView>
+    );
+  }
 
   const specs = [
     { icon: 'speedometer-outline', label: 'Fuel', value: vehicle.fuel },
@@ -70,7 +104,7 @@ export default function VehicleDetailsScreen() {
                 <Text className="text-neutral-500 text-sm">({vehicle.reviews})</Text>
               </View>
             </View>
-            <Text className="text-blue-600 text-3xl font-bold">₹{vehicle.price}/day</Text>
+            <Text className="text-blue-600 text-3xl font-bold">Rs. {vehicle.price}/day</Text>
           </View>
 
           {/* Specs */}
@@ -95,43 +129,11 @@ export default function VehicleDetailsScreen() {
             <Text className="text-neutral-600 leading-6">{vehicle.description}</Text>
           </Card>
 
-          {/* Date Selection */}
-          <Card>
-            <Text className="text-neutral-800 font-semibold text-lg mb-4">Select Dates</Text>
-            <View className="space-y-3">
-              <TouchableOpacity className="bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 flex-row items-center justify-between">
-                <View className="flex-row items-center space-x-3">
-                  <Ionicons name="calendar-outline" size={20} color="#64748b" />
-                  <View>
-                    <Text className="text-neutral-500 text-xs">Pickup Date</Text>
-                    <Text className="text-neutral-800 font-medium">
-                      {pickupDate || 'Select date'}
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-down" size={20} color="#64748b" />
-              </TouchableOpacity>
-
-              <TouchableOpacity className="bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 flex-row items-center justify-between">
-                <View className="flex-row items-center space-x-3">
-                  <Ionicons name="calendar-outline" size={20} color="#64748b" />
-                  <View>
-                    <Text className="text-neutral-500 text-xs">Return Date</Text>
-                    <Text className="text-neutral-800 font-medium">
-                      {returnDate || 'Select date'}
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-down" size={20} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-          </Card>
-
           {/* Book Now Button */}
           <Button
             title="Book Now"
             onPress={() =>
-              router.push(`/booking?id=${vehicle.id}&name=${vehicle.name}&price=${vehicle.price}`)
+              router.push(`/booking?id=${vehicle.id}&name=${vehicle.name}&price=${vehicle.price}&image=${encodeURIComponent(vehicle.image)}`)
             }
             size="lg"
           />

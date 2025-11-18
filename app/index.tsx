@@ -15,17 +15,17 @@ export default function WelcomeScreen() {
 
   const slides = [
     {
-      image: require('../assets/images/car/car1.jpeg'),
+      image: { uri: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600' },
       title: 'Premium Cars',
       description: 'Choose from luxury and economy cars',
     },
     {
-      image: require('../assets/images/bike/royalenfield1.jpeg'),
+      image: { uri: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600' },
       title: 'Powerful Bikes',
       description: 'Adventure on two wheels',
     },
     {
-      image: require('../assets/images/car/bmw1.jpeg'),
+      image: { uri: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600' },
       title: 'Luxury Fleet',
       description: 'Drive in style and comfort',
     },

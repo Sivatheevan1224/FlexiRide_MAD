@@ -41,7 +41,7 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
         {/* Header with Status */}
         <View className="flex-row justify-between items-center">
           <Text className="text-neutral-800 font-semibold text-base">
-            Booking #{booking.id.slice(0, 8)}
+            {booking.vehicleName}
           </Text>
           <View className={`px-3 py-1 rounded-full ${getStatusColor(booking.status)}`}>
             <Text className={`text-xs font-medium capitalize ${getStatusColor(booking.status).split(' ')[1]}`}>
@@ -60,11 +60,11 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
             />
           </View>
           <View className="flex-1 justify-center">
-            <Text className="text-neutral-800 font-semibold text-base">
-              {booking.vehicleName}
+            <Text className="text-blue-600 font-bold text-lg">
+              Rs. {booking.totalPrice}
             </Text>
-            <Text className="text-blue-600 font-bold text-lg mt-1">
-              ₹{booking.totalPrice}
+            <Text className="text-neutral-500 text-sm mt-1">
+              Total Amount
             </Text>
           </View>
         </View>
