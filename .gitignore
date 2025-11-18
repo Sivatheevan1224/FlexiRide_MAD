@@ -31,10 +31,18 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
-# typescript
-*.tsbuildinfo
+# Firebase sensitive files
+backend/serviceAccountKey.json
+**/serviceAccountKey.json
+
+# Credentials and secrets
+*.key
+*.pem
+*.p12
+*.p8
 
 app-example
 
