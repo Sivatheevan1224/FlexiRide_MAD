@@ -29,18 +29,18 @@ export default function AddVehicleScreen() {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && params.id) {
       // Populate form with existing data
-      setName(params.name ? decodeURIComponent(params.name as string) : '');
-      setType((params.type as 'car' | 'bike') || 'car');
-      setPrice(params.price as string || '');
-      setVehicleImage(params.image ? decodeURIComponent(params.image as string) : null);
-      setFuel(params.fuel ? decodeURIComponent(params.fuel as string) : '');
-      setGear(params.gear ? decodeURIComponent(params.gear as string) : '');
-      setSeats(params.seats as string || '');
-      setDescription(params.description ? decodeURIComponent(params.description as string) : '');
+      if (params.name) setName(decodeURIComponent(params.name as string));
+      if (params.type) setType(params.type as 'car' | 'bike');
+      if (params.price) setPrice(String(params.price));
+      if (params.image) setVehicleImage(decodeURIComponent(params.image as string));
+      if (params.fuel) setFuel(decodeURIComponent(params.fuel as string));
+      if (params.gear) setGear(decodeURIComponent(params.gear as string));
+      if (params.seats) setSeats(String(params.seats));
+      if (params.description) setDescription(decodeURIComponent(params.description as string));
     }
-  }, [params]);
+  }, [isEditing, params.id]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -56,24 +56,28 @@ export default function AddVehicleScreen() {
   };
 
   const handleSave = async () => {
-    if (!name || !price || !fuel || !gear) {
+    if (!name || !price || !fuel || !gear || !seats) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
     setLoading(true);
     
-    const vehicleData = {
+    const vehicleData: any = {
       name,
       type,
       pricePerDay: parseInt(price),
       imageUrl: vehicleImage || 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400',
       fuelType: fuel,
       transmission: gear,
-      seats: seats ? parseInt(seats) : undefined,
-      description,
+      seats: parseInt(seats),
       availability: true,
     };
+
+    // Only add description if it's not empty
+    if (description) {
+      vehicleData.description = description;
+    }
 
     let result;
     if (isEditing) {
