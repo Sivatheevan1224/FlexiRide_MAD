@@ -10,7 +10,9 @@
  * - Enables us to use latest JavaScript syntax while supporting older devices
  * - Required for React Native to work properly
  * 
- * WHAT EACH PART DOES:
+ * NATIVEWIND v4:
+ * - Uses 'nativewind/babel' preset instead of plugin
+ * - This enables TailwindCSS styling on iOS, Android, and Web
  */
 module.exports = function(api) {
   // api.cache(true) - Caches the config for better build performance
@@ -23,14 +25,8 @@ module.exports = function(api) {
       //   - React Native transformations
       //   - TypeScript support
       //   - Modern JavaScript features (async/await, arrow functions, etc.)
-      'babel-preset-expo'
-    ],
-    
-    // PLUGINS: Additional transformations
-    plugins: [
-      // 'nativewind/babel' - Enables NativeWind (Tailwind CSS for React Native)
-      //   - Transforms className="..." into React Native styles
-      //   - Allows us to use Tailwind classes like "bg-blue-600", "p-4", etc.
+      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+      // NativeWind v4 preset for TailwindCSS support
       'nativewind/babel',
     ],
   };

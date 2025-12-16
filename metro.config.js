@@ -17,15 +17,16 @@
  * - Creates optimized bundles for production
  * - Handles asset loading (images, fonts, etc.)
  * 
- * NOTE: We use Expo's default config which works for most projects.
- * You only need to modify this for advanced customizations.
+ * NATIVEWIND v4 CONFIGURATION:
+ * - withNativeWind() wraps the config to enable TailwindCSS
+ * - This is required for styles to work on iOS, Android, AND Web
  */
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 // Get Expo's default Metro configuration
-// __dirname is the current directory (project root)
 const config = getDefaultConfig(__dirname);
 
-// Export the configuration for Metro to use
-module.exports = config;
+// Wrap with NativeWind for TailwindCSS support on all platforms
+module.exports = withNativeWind(config, { input: './global.css' });

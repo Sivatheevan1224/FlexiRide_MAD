@@ -33,8 +33,8 @@ export default function Input({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <View className={`space-y-2 ${className}`}>
-      {label && <Text className="text-neutral-700 font-medium text-base">{label}</Text>}
+    <View className={className} style={{ marginBottom: 16 }}>
+      {label && <Text className="text-neutral-700 font-medium text-base" style={{ marginBottom: 8 }}>{label}</Text>}
       
       <View className="relative">
         {icon && (

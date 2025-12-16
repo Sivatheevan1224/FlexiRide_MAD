@@ -91,14 +91,14 @@ export default function VehicleDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6" style={{ gap: 24 }}>
           {/* Title and Rating */}
           <View>
             <View className="flex-row justify-between items-start mb-2">
               <Text className="text-neutral-800 text-2xl font-bold flex-1">
                 {vehicle.name}
               </Text>
-              <View className="flex-row items-center space-x-1">
+              <View className="flex-row items-center" style={{ gap: 4 }}>
                 <Ionicons name="star" size={20} color="#fbbf24" />
                 <Text className="text-neutral-700 font-semibold">{vehicle.rating}</Text>
                 <Text className="text-neutral-500 text-sm">({vehicle.reviews})</Text>
@@ -113,7 +113,7 @@ export default function VehicleDetailsScreen() {
             <View className="flex-row flex-wrap -mx-2">
               {specs.map((spec, index) => (
                 <View key={index} className="w-1/2 px-2 mb-4">
-                  <View className="bg-slate-50 rounded-lg p-3 space-y-1">
+                  <View className="bg-slate-50 rounded-lg p-3" style={{ gap: 4 }}>
                     <Ionicons name={spec.icon as any} size={24} color="#2563eb" />
                     <Text className="text-neutral-500 text-xs">{spec.label}</Text>
                     <Text className="text-neutral-800 font-semibold">{spec.value}</Text>

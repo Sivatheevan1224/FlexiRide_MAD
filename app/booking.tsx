@@ -212,7 +212,7 @@ export default function BookingScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-4">
+          <View className="flex-row items-center mb-4" style={{ gap: 16 }}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -220,11 +220,11 @@ export default function BookingScreen() {
           </View>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6" style={{ gap: 24 }}>
           {/* Vehicle Info Card */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Vehicle Details</Text>
-            <View className="flex-row space-x-4">
+            <View className="flex-row" style={{ gap: 16 }}>
               <View className="w-24 h-24 rounded-lg bg-slate-100 overflow-hidden">
                 <Image
                   source={{ uri: vehicleImage }}
@@ -244,14 +244,14 @@ export default function BookingScreen() {
           {/* Booking Details */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Booking Details</Text>
-            <View className="space-y-3">
+            <View style={{ gap: 12 }}>
               {/* Pickup Date */}
               <TouchableOpacity 
                 onPress={() => setShowPickupPicker(true)}
                 activeOpacity={0.7}
                 className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
               >
-                <View className="flex-row items-center space-x-3">
+                <View className="flex-row items-center" style={{ gap: 12 }}>
                   <Ionicons name="calendar" size={22} color="#2563eb" />
                   <View>
                     <Text className="text-neutral-500 text-xs mb-1">Pickup Date</Text>
@@ -278,7 +278,7 @@ export default function BookingScreen() {
                 activeOpacity={0.7}
                 className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
               >
-                <View className="flex-row items-center space-x-3">
+                <View className="flex-row items-center" style={{ gap: 12 }}>
                   <Ionicons name="calendar" size={22} color="#2563eb" />
                   <View>
                     <Text className="text-neutral-500 text-xs mb-1">Return Date</Text>
@@ -300,7 +300,7 @@ export default function BookingScreen() {
               )}
 
               <View className="flex-row justify-between items-center py-2">
-                <View className="flex-row items-center space-x-3">
+                <View className="flex-row items-center" style={{ gap: 12 }}>
                   <Ionicons name="time-outline" size={20} color="#2563eb" />
                   <Text className="text-neutral-600">Duration</Text>
                 </View>
@@ -312,7 +312,7 @@ export default function BookingScreen() {
           {/* Price Breakdown */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Price Breakdown</Text>
-            <View className="space-y-3">
+            <View style={{ gap: 12 }}>
               <View className="flex-row justify-between items-center">
                 <Text className="text-neutral-600">Rental ({numberOfDays} days)</Text>
                 <Text className="text-neutral-800 font-medium">
@@ -344,11 +344,11 @@ export default function BookingScreen() {
 
           {/* Payment Method */}
           {!showPayment ? (
-            <View className="space-y-6">
+            <View style={{ gap: 24 }}>
               <Card>
                 <Text className="text-neutral-800 font-semibold text-lg mb-4">Payment Method</Text>
                 <View className="flex-row items-center justify-between bg-slate-50 rounded-lg p-4">
-                  <View className="flex-row items-center space-x-3">
+                  <View className="flex-row items-center" style={{ gap: 12 }}>
                     <Ionicons name="card-outline" size={24} color="#2563eb" />
                     <View>
                       <Text className="text-neutral-800 font-medium">Credit/Debit Card</Text>
@@ -361,7 +361,7 @@ export default function BookingScreen() {
 
               {/* Terms */}
               <View className="bg-blue-50 rounded-xl p-4">
-                <View className="flex-row items-start space-x-2">
+                <View className="flex-row items-start" style={{ gap: 8 }}>
                   <Ionicons name="information-circle" size={20} color="#2563eb" />
                   <Text className="text-neutral-600 text-sm flex-1">
                     By proceeding, you agree to our terms and conditions. Cancellation charges may apply.
@@ -378,7 +378,7 @@ export default function BookingScreen() {
               />
             </View>
           ) : (
-            <View className="space-y-6">
+            <View style={{ gap: 24 }}>
               {/* Payment Form */}
               <Card>
                 <View className="flex-row items-center justify-between mb-4">
@@ -388,7 +388,7 @@ export default function BookingScreen() {
                   </TouchableOpacity>
                 </View>
 
-                <View className="space-y-4">
+                <View style={{ gap: 16 }}>
                   {/* Card Number */}
                   <View>
                     <Text className="text-neutral-700 font-medium mb-2">Card Number</Text>
@@ -421,7 +421,7 @@ export default function BookingScreen() {
                   </View>
 
                   {/* Expiry and CVV */}
-                  <View className="flex-row space-x-3">
+                  <View className="flex-row" style={{ gap: 12 }}>
                     <View className="flex-1">
                       <Text className="text-neutral-700 font-medium mb-2">Expiry Date</Text>
                       <View className="flex-row items-center bg-slate-50 border border-slate-300 rounded-lg px-4 py-3">
