@@ -63,8 +63,10 @@ const app = initializeApp(firebaseConfig);
  * - firebase/auth.ts (for login/signup)
  * - firebase/vehicles.ts (for vehicle CRUD)
  * - firebase/bookings.ts (for booking operations)
+ * 
+ * Note: Session persistence is handled by AuthContext using AsyncStorage
  */
-export const auth = getAuth(app);       // Authentication service
+export const auth = getAuth(app);
 export const db = getFirestore(app);    // Firestore database
 export const storage = getStorage(app); // File storage
 

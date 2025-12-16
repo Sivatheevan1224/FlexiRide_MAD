@@ -94,15 +94,15 @@ export default function ManageVehiclesScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-6">
-            <TouchableOpacity onPress={() => router.back()}>
+          <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/admin/home')}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text className="text-white text-2xl font-bold">Manage Vehicles</Text>
           </View>
 
           {/* Tabs */}
-          <View className="flex-row space-x-3">
+          <View className="flex-row" style={{ gap: 12 }}>
             {(['all', 'available', 'rented'] as const).map((tab) => (
               <TouchableOpacity
                 key={tab}
@@ -131,7 +131,7 @@ export default function ManageVehiclesScreen() {
             className="mb-6"
           >
             <Card>
-              <View className="flex-row items-center justify-center space-x-2 py-2">
+              <View className="flex-row items-center justify-center py-2" style={{ gap: 8 }}>
                 <Ionicons name="add-circle" size={24} color="#2563eb" />
                 <Text className="text-blue-600 font-semibold text-base">Add New Vehicle</Text>
               </View>
@@ -145,10 +145,11 @@ export default function ManageVehiclesScreen() {
               <Text className="text-center text-neutral-500 mt-4">Loading vehicles...</Text>
             </View>
           ) : (
-            <View className="space-y-4">
+            <View>
               {filteredVehicles.map((vehicle) => (
-                <Card key={vehicle.id}>
-                  <View className="flex-row space-x-4">
+                <View key={vehicle.id} style={{ marginBottom: 16 }}>
+                  <Card>
+                  <View className="flex-row" style={{ gap: 16 }}>
                     {/* Vehicle Image */}
                     <Image
                       source={typeof vehicle.image === 'string' ? { uri: vehicle.image } : vehicle.image}
@@ -188,7 +189,7 @@ export default function ManageVehiclesScreen() {
                       </View>
 
                       {/* Action Buttons */}
-                      <View className="flex-row space-x-2">
+                      <View className="flex-row" style={{ gap: 8 }}>
                         <TouchableOpacity 
                           onPress={() => {
                             const vehicleData = rawVehicles.find(v => v.id === vehicle.id);
@@ -209,14 +210,16 @@ export default function ManageVehiclesScreen() {
                             console.log('Edit params:', params.toString());
                             router.push(`/admin/add-vehicle?${params.toString()}`);
                           }}
-                          className="bg-blue-50 px-3 py-1.5 rounded-lg flex-row items-center space-x-1"
+                          className="bg-blue-50 px-3 py-1.5 rounded-lg flex-row items-center"
+                          style={{ gap: 4 }}
                         >
                           <Ionicons name="create-outline" size={16} color="#2563eb" />
                           <Text className="text-blue-600 text-xs font-medium">Edit</Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
                           onPress={() => handleDelete(vehicle.id, vehicle.name)}
-                          className="bg-red-50 px-3 py-1.5 rounded-lg flex-row items-center space-x-1"
+                          className="bg-red-50 px-3 py-1.5 rounded-lg flex-row items-center"
+                          style={{ gap: 4 }}
                         >
                           <Ionicons name="trash-outline" size={16} color="#ef4444" />
                           <Text className="text-red-600 text-xs font-medium">Delete</Text>
@@ -224,7 +227,8 @@ export default function ManageVehiclesScreen() {
                       </View>
                     </View>
                   </View>
-                </Card>
+                  </Card>
+                </View>
               ))}
             </View>
           )}

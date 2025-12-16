@@ -3,9 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../../components/ui/card';
+import { useAuth } from '../../context/AuthContext';
 import { signOut } from '../../firebase/auth';
 import { getAllBookings } from '../../firebase/bookings';
 import { db } from '../../firebase/config';
@@ -13,6 +14,7 @@ import { getAllVehicles } from '../../firebase/vehicles';
 
 export default function AdminHomeScreen() {
   const router = useRouter();
+  const { clearSession } = useAuth();
   const [stats, setStats] = useState([
     { label: 'Total Vehicles', value: '0', icon: 'car-sport', color: 'bg-blue-500' },
     { label: 'Active Bookings', value: '0', icon: 'calendar', color: 'bg-green-500' },
@@ -107,12 +109,31 @@ export default function AdminHomeScreen() {
               <Text className="text-white text-2xl font-bold">FlexiRide</Text>
             </View>
             <TouchableOpacity
-              onPress={async () => {
-                const result = await signOut();
-                if (result.success) {
-                  router.replace('/' as any);
+              onPress={() => {
+                const performLogout = async () => {
+                  const result = await signOut();
+                  if (result.success) {
+                    await clearSession();
+                    router.replace('/' as any);
+                  } else {
+                    Alert.alert('Error', result.error || 'Failed to logout');
+                  }
+                };
+
+                if (Platform.OS === 'web') {
+                  const confirmed = window.confirm('Are you sure you want to logout?');
+                  if (confirmed) {
+                    performLogout();
+                  }
                 } else {
-                  Alert.alert('Error', result.error || 'Failed to logout');
+                  Alert.alert(
+                    'Logout',
+                    'Are you sure you want to logout?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Logout', style: 'destructive', onPress: performLogout }
+                    ]
+                  );
                 }
               }}
               className="bg-white/20 rounded-full p-2"
@@ -122,20 +143,20 @@ export default function AdminHomeScreen() {
           </View>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6">
           {/* Stats Cards */}
-          <View>
+          <View style={{ marginBottom: 24 }}>
             <Text className="text-neutral-800 text-xl font-bold mb-4">Overview</Text>
-            <View className="flex-row flex-wrap -mx-2">
+            <View className="flex-row flex-wrap" style={{ marginHorizontal: -8 }}>
               {stats.map((stat, index) => (
-                <View key={index} className="w-1/2 px-2 mb-4">
+                <View key={index} className="w-1/2" style={{ paddingHorizontal: 8, marginBottom: 16 }}>
                   <Card padding="md">
-                    <View className="space-y-2">
+                    <View>
                       <View className={`${stat.color} w-12 h-12 rounded-xl items-center justify-center`}>
                         <Ionicons name={stat.icon as any} size={24} color="#ffffff" />
                       </View>
-                      <Text className="text-neutral-600 text-sm">{stat.label}</Text>
-                      <Text className="text-neutral-800 text-2xl font-bold">{stat.value}</Text>
+                      <Text className="text-neutral-600 text-sm" style={{ marginTop: 8 }}>{stat.label}</Text>
+                      <Text className="text-neutral-800 text-2xl font-bold" style={{ marginTop: 4 }}>{stat.value}</Text>
                     </View>
                   </Card>
                 </View>
@@ -146,15 +167,16 @@ export default function AdminHomeScreen() {
           {/* Menu Items */}
           <View>
             <Text className="text-neutral-800 text-xl font-bold mb-4">Quick Actions</Text>
-            <View className="space-y-3">
+            <View>
               {menuItems.map((item, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => router.push(item.route as any)}
                   activeOpacity={0.7}
+                  style={{ marginBottom: 12 }}
                 >
                   <Card>
-                    <View className="flex-row items-center space-x-4">
+                    <View className="flex-row items-center" style={{ gap: 16 }}>
                       <View className={`${item.color} w-14 h-14 rounded-xl items-center justify-center`}>
                         <Ionicons name={item.icon as any} size={28} color="#ffffff" />
                       </View>
@@ -162,7 +184,7 @@ export default function AdminHomeScreen() {
                         <Text className="text-neutral-800 font-semibold text-base">
                           {item.title}
                         </Text>
-                        <Text className="text-neutral-500 text-sm">{item.description}</Text>
+                        <Text className="text-neutral-500 text-sm" style={{ marginTop: 2 }}>{item.description}</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
                     </View>
@@ -173,11 +195,11 @@ export default function AdminHomeScreen() {
           </View>
 
           {/* Recent Activity */}
-          <View>
+          <View style={{ marginTop: 24 }}>
             <Text className="text-neutral-800 text-xl font-bold mb-4">Recent Activity</Text>
             <Card>
-              <View className="space-y-3">
-                <View className="flex-row items-center space-x-3 pb-3 border-b border-slate-100">
+              <View>
+                <View className="flex-row items-center pb-3 border-b border-slate-100" style={{ gap: 12 }}>
                   <View className="bg-green-100 w-10 h-10 rounded-full items-center justify-center">
                     <Ionicons name="checkmark" size={20} color="#22c55e" />
                   </View>
@@ -186,7 +208,7 @@ export default function AdminHomeScreen() {
                     <Text className="text-neutral-500 text-xs">2 minutes ago</Text>
                   </View>
                 </View>
-                <View className="flex-row items-center space-x-3 pb-3 border-b border-slate-100">
+                <View className="flex-row items-center pb-3 border-b border-slate-100" style={{ gap: 12, marginTop: 12 }}>
                   <View className="bg-blue-100 w-10 h-10 rounded-full items-center justify-center">
                     <Ionicons name="car-sport" size={20} color="#2563eb" />
                   </View>
@@ -195,7 +217,7 @@ export default function AdminHomeScreen() {
                     <Text className="text-neutral-500 text-xs">1 hour ago</Text>
                   </View>
                 </View>
-                <View className="flex-row items-center space-x-3">
+                <View className="flex-row items-center" style={{ gap: 12, marginTop: 12 }}>
                   <View className="bg-purple-100 w-10 h-10 rounded-full items-center justify-center">
                     <Ionicons name="person-add" size={20} color="#9333ea" />
                   </View>

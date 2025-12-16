@@ -116,15 +116,15 @@ export default function ManageUsersScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-6">
-            <TouchableOpacity onPress={() => router.back()}>
+          <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/admin/home')}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text className="text-white text-2xl font-bold">Manage Users</Text>
           </View>
 
           {/* Tabs */}
-          <View className="flex-row space-x-3">
+          <View className="flex-row" style={{ gap: 12 }}>
             {(['all', 'users', 'admins'] as const).map((tab) => (
               <TouchableOpacity
                 key={tab}
@@ -145,9 +145,10 @@ export default function ManageUsersScreen() {
           </View>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6">
           {/* Stats */}
-          <Card>
+          <View style={{ marginBottom: 24 }}>
+            <Card>
             <View className="flex-row justify-around">
               <View className="items-center">
                 <Text className="text-neutral-500 text-xs">Total Users</Text>
@@ -164,7 +165,8 @@ export default function ManageUsersScreen() {
                 <Text className="text-purple-600 font-bold text-2xl">{stats.admins}</Text>
               </View>
             </View>
-          </Card>
+            </Card>
+          </View>
 
           {/* Users List */}
           {loading ? (
@@ -173,14 +175,15 @@ export default function ManageUsersScreen() {
               <Text className="text-center text-neutral-500 mt-4">Loading users...</Text>
             </View>
           ) : (
-            <View className="space-y-3">
+            <View>
               {filteredUsers.map((user) => (
-                <Card key={user.uid}>
-                  <View className="space-y-3">
+                <View key={user.uid} style={{ marginBottom: 12 }}>
+                  <Card>
+                    <View>
                     {/* User Info */}
                     <View className="flex-row items-start justify-between">
                       <View className="flex-1">
-                        <View className="flex-row items-center space-x-2 mb-1">
+                        <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
                           <Text className="text-neutral-800 font-semibold text-base">
                             {user.name}
                           </Text>
@@ -210,10 +213,11 @@ export default function ManageUsersScreen() {
                     </View>
 
                     {/* Action Buttons */}
-                    <View className="flex-row space-x-2 pt-2 border-t border-slate-100">
+                    <View className="flex-row pt-2 border-t border-slate-100" style={{ gap: 8 }}>
                       <TouchableOpacity
                         onPress={() => handleChangeRole(user)}
-                        className="flex-1 bg-blue-50 px-3 py-2 rounded-lg flex-row items-center justify-center space-x-1"
+                        className="flex-1 bg-blue-50 px-3 py-2 rounded-lg flex-row items-center justify-center"
+                        style={{ gap: 4 }}
                       >
                         <Ionicons
                           name={user.role === 'admin' ? 'person' : 'shield-checkmark'}
@@ -227,14 +231,16 @@ export default function ManageUsersScreen() {
                       
                       <TouchableOpacity
                         onPress={() => handleDeleteUser(user)}
-                        className="bg-red-50 px-3 py-2 rounded-lg flex-row items-center space-x-1"
+                        className="bg-red-50 px-3 py-2 rounded-lg flex-row items-center"
+                        style={{ gap: 4 }}
                       >
                         <Ionicons name="trash-outline" size={16} color="#ef4444" />
                         <Text className="text-red-600 text-xs font-medium">Delete</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
-                </Card>
+                  </Card>
+                </View>
               ))}
 
               {filteredUsers.length === 0 && (
