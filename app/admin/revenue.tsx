@@ -79,17 +79,19 @@ export default function RevenueScreen() {
   };
 
   const StatCard = ({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) => (
-    <Card>
-      <View className="flex-row items-center space-x-3">
-        <View className={`${color} p-3 rounded-full`}>
-          <Ionicons name={icon as any} size={24} color="#ffffff" />
+    <View style={{ marginBottom: 12 }}>
+      <Card>
+        <View className="flex-row items-center" style={{ gap: 12 }}>
+          <View className={`${color} p-3 rounded-full`}>
+            <Ionicons name={icon as any} size={24} color="#ffffff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-neutral-500 text-sm">{label}</Text>
+            <Text className="text-neutral-800 text-xl font-bold" style={{ marginTop: 4 }}>{value}</Text>
+          </View>
         </View>
-        <View className="flex-1">
-          <Text className="text-neutral-500 text-sm">{label}</Text>
-          <Text className="text-neutral-800 text-xl font-bold mt-1">{value}</Text>
-        </View>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 
   return (
@@ -97,8 +99,8 @@ export default function RevenueScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4">
-            <TouchableOpacity onPress={() => router.back()}>
+          <View className="flex-row items-center" style={{ gap: 16 }}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/admin/home')}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text className="text-white text-2xl font-bold">Revenue Dashboard</Text>
@@ -112,9 +114,10 @@ export default function RevenueScreen() {
               <Text className="text-center text-neutral-500 mt-4">Loading revenue data...</Text>
             </View>
           ) : (
-            <View className="space-y-4">
+            <View>
               {/* Total Revenue Card */}
-              <Card>
+              <View style={{ marginBottom: 16 }}>
+                <Card>
                 <View className="items-center py-4">
                   <Text className="text-neutral-500 text-base mb-2">Total Revenue</Text>
                   <Text className="text-blue-600 text-4xl font-bold">Rs. {stats.totalRevenue.toLocaleString()}</Text>
@@ -122,11 +125,12 @@ export default function RevenueScreen() {
                     From {stats.completedBookings + stats.activeBookings} bookings
                   </Text>
                 </View>
-              </Card>
+                </Card>
+              </View>
 
               {/* Booking Statistics */}
-              <View className="space-y-3">
-                <Text className="text-neutral-800 font-semibold text-lg">Booking Statistics</Text>
+              <View style={{ marginBottom: 16 }}>
+                <Text className="text-neutral-800 font-semibold text-lg" style={{ marginBottom: 12 }}>Booking Statistics</Text>
                 
                 <StatCard
                   icon="checkmark-circle"
@@ -159,36 +163,40 @@ export default function RevenueScreen() {
 
               {/* Monthly Revenue */}
               {Object.keys(stats.monthlyRevenue).length > 0 && (
-                <View className="space-y-3 mt-4">
-                  <Text className="text-neutral-800 font-semibold text-lg">Monthly Revenue</Text>
+                <View style={{ marginTop: 16 }}>
+                  <Text className="text-neutral-800 font-semibold text-lg" style={{ marginBottom: 12 }}>Monthly Revenue</Text>
                   {Object.entries(stats.monthlyRevenue)
                     .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
                     .map(([month, revenue]) => (
-                      <Card key={month}>
-                        <View className="flex-row items-center justify-between">
-                          <View className="flex-row items-center space-x-3">
-                            <View className="bg-blue-100 p-2 rounded-lg">
-                              <Ionicons name="calendar" size={20} color="#2563eb" />
+                      <View key={month} style={{ marginBottom: 12 }}>
+                        <Card>
+                          <View className="flex-row items-center justify-between">
+                            <View className="flex-row items-center" style={{ gap: 12 }}>
+                              <View className="bg-blue-100 p-2 rounded-lg">
+                                <Ionicons name="calendar" size={20} color="#2563eb" />
+                              </View>
+                              <Text className="text-neutral-800 font-medium">{month}</Text>
                             </View>
-                            <Text className="text-neutral-800 font-medium">{month}</Text>
+                            <Text className="text-blue-600 font-bold text-lg">Rs. {revenue.toLocaleString()}</Text>
                           </View>
-                          <Text className="text-blue-600 font-bold text-lg">Rs. {revenue.toLocaleString()}</Text>
-                        </View>
-                      </Card>
+                        </Card>
+                      </View>
                     ))}
                 </View>
               )}
 
               {/* Average Booking Value */}
               {stats.completedBookings + stats.activeBookings > 0 && (
-                <Card>
-                  <View className="items-center py-4">
-                    <Text className="text-neutral-500 text-base mb-2">Average Booking Value</Text>
-                    <Text className="text-green-600 text-2xl font-bold">
-                      Rs. {Math.round(stats.totalRevenue / (stats.completedBookings + stats.activeBookings)).toLocaleString()}
-                    </Text>
-                  </View>
-                </Card>
+                <View style={{ marginTop: 16 }}>
+                  <Card>
+                    <View className="items-center py-4">
+                      <Text className="text-neutral-500 text-base mb-2">Average Booking Value</Text>
+                      <Text className="text-green-600 text-2xl font-bold">
+                        Rs. {Math.round(stats.totalRevenue / (stats.completedBookings + stats.activeBookings)).toLocaleString()}
+                      </Text>
+                    </View>
+                  </Card>
+                </View>
               )}
             </View>
           )}

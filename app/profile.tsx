@@ -2,15 +2,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Card from '../components/ui/card';
+import { useAuth } from '../context/AuthContext';
 import { getCurrentUser, getCurrentUserData, signOut } from '../firebase/auth';
 import { getUserBookings } from '../firebase/bookings';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { clearSession } = useAuth();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     name: 'User',
@@ -53,29 +55,47 @@ export default function ProfileScreen() {
     { icon: 'help-circle-outline', label: 'Help & Support', route: '/support' },
   ];
 
+  const performLogout = async () => {
+    setLoading(true);
+    const result = await signOut();
+    
+    if (result.success) {
+      // Clear session from AsyncStorage
+      await clearSession();
+      setLoading(false);
+      router.replace('/');
+    } else {
+      setLoading(false);
+      if (Platform.OS === 'web') {
+        window.alert(result.error || 'Failed to logout');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to logout');
+      }
+    }
+  };
+
   const handleLogout = async () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            setLoading(true);
-            const result = await signOut();
-            setLoading(false);
-            
-            if (result.success) {
-              router.replace('/');
-            } else {
-              Alert.alert('Error', result.error || 'Failed to logout');
-            }
+    // On web, use window.confirm for better compatibility
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to logout?');
+      if (confirmed) {
+        await performLogout();
+      }
+    } else {
+      // On mobile, use Alert.alert
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: performLogout
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (
@@ -83,7 +103,7 @@ export default function ProfileScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-12 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-8">
+          <View className="flex-row items-center mb-8" style={{ gap: 16 }}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -103,7 +123,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6" style={{ gap: 24 }}>
           {/* Stats Card */}
           <Card>
             <View className="flex-row justify-around">
@@ -127,8 +147,8 @@ export default function ProfileScreen() {
           {/* Contact Info */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Contact Information</Text>
-            <View className="space-y-3">
-              <View className="flex-row items-center space-x-3">
+            <View style={{ gap: 12 }}>
+              <View className="flex-row items-center" style={{ gap: 12 }}>
                 <View className="bg-blue-50 rounded-full p-2">
                   <Ionicons name="mail-outline" size={20} color="#2563eb" />
                 </View>
@@ -142,14 +162,14 @@ export default function ProfileScreen() {
 
           {/* Menu Items */}
           <Card padding="sm">
-            <View className="space-y-1">
+            <View style={{ gap: 4 }}>
               {menuItems.map((item, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => router.push(item.route as any)}
                   className="flex-row items-center justify-between p-3 rounded-lg active:bg-slate-50"
                 >
-                  <View className="flex-row items-center space-x-3">
+                  <View className="flex-row items-center" style={{ gap: 12 }}>
                     <Ionicons name={item.icon as any} size={22} color="#64748b" />
                     <Text className="text-neutral-700 font-medium">{item.label}</Text>
                   </View>

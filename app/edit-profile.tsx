@@ -75,7 +75,7 @@ export default function EditProfileScreen() {
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-            <View className="flex-row items-center space-x-4">
+            <View className="flex-row items-center" style={{ gap: 16 }}>
               <TouchableOpacity onPress={() => router.back()}>
                 <Ionicons name="arrow-back" size={24} color="#ffffff" />
               </TouchableOpacity>
@@ -83,7 +83,7 @@ export default function EditProfileScreen() {
             </View>
           </View>
 
-          <View className="px-6 py-6 space-y-6">
+          <View className="px-6 py-6" style={{ gap: 24 }}>
             {/* Avatar */}
             <Card>
               <View className="items-center py-4">
@@ -100,7 +100,7 @@ export default function EditProfileScreen() {
             {/* Form */}
             <Card>
               <Text className="text-neutral-800 font-semibold text-lg mb-4">Personal Information</Text>
-              <View className="space-y-4">
+              <View style={{ gap: 16 }}>
                 <Input
                   label="Full Name"
                   placeholder="Enter your full name"
@@ -111,7 +111,7 @@ export default function EditProfileScreen() {
 
                 <View>
                   <Text className="text-neutral-700 font-medium text-base mb-2">Email Address</Text>
-                  <View className="bg-slate-100 rounded-xl px-4 py-3 flex-row items-center space-x-3">
+                  <View className="bg-slate-100 rounded-xl px-4 py-3 flex-row items-center" style={{ gap: 12 }}>
                     <Ionicons name="mail-outline" size={20} color="#64748b" />
                     <Text className="flex-1 text-neutral-600">{email}</Text>
                     <View className="bg-slate-200 px-2 py-1 rounded">

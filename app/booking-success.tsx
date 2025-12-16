@@ -26,7 +26,7 @@ export default function BookingSuccessScreen() {
         </Text>
 
         {/* Buttons */}
-        <View className="w-full space-y-3">
+        <View className="w-full" style={{ gap: 12 }}>
           <Button
             title="View My Bookings"
             onPress={() => router.replace('/my-bookings')}

@@ -6,10 +6,12 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpaci
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Input from '../components/ui/input';
+import { useAuth } from '../context/AuthContext';
 import { signUp } from '../firebase/auth';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,6 +43,10 @@ export default function SignupScreen() {
       
       if (result.success && result.userData) {
         console.log('Signup successful:', result.userData);
+        
+        // Set session in AuthContext
+        await login(result.userData);
+        
         Alert.alert(
           'Success', 
           'Account created successfully!',
@@ -79,8 +85,16 @@ export default function SignupScreen() {
           className="flex-1 px-6 py-8"
           showsVerticalScrollIndicator={false}
         >
+          {/* Back Button */}
+          <TouchableOpacity
+            onPress={() => router.replace('/')}
+            className="bg-blue-100 rounded-full p-3 self-start"
+          >
+            <Ionicons name="arrow-back" size={24} color="#2563eb" />
+          </TouchableOpacity>
+
           {/* Header */}
-          <View className="items-center mb-8">
+          <View className="items-center mb-8 mt-4">
             <View className="bg-blue-600 rounded-full p-4 mb-4">
               <Ionicons name="person-add" size={40} color="#ffffff" />
             </View>
@@ -90,19 +104,8 @@ export default function SignupScreen() {
             </Text>
           </View>
 
-          {/* Demo Info Card */}
-          <View className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-            <View className="flex-row items-center mb-2">
-              <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
-              <Text className="text-green-800 font-semibold text-sm ml-2">Firebase Authentication</Text>
-            </View>
-            <Text className="text-green-700 text-xs leading-5">
-              Your account will be securely created with Firebase. Admins are automatically detected if your email contains "admin".
-            </Text>
-          </View>
-
           {/* Form */}
-          <View className="space-y-4">
+          <View>
             <Input
               label="Full Name"
               placeholder="Enter your name"
@@ -139,7 +142,7 @@ export default function SignupScreen() {
             />
 
             {/* Signup Button */}
-            <View className="pt-4">
+            <View>
               <Button
                 title="Create Account"
                 onPress={handleSignup}

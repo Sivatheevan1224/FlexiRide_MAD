@@ -30,6 +30,9 @@ module.exports = {
     "./screens/**/*.{js,jsx,ts,tsx}"   // Any screen files (if separate folder)
   ],
   
+  // PRESETS: NativeWind preset is required for v4 to work
+  presets: [require('nativewind/preset')],
+  
   // THEME: Customize the default Tailwind design tokens
   theme: {
     extend: {
@@ -43,11 +46,4 @@ module.exports = {
   
   // PLUGINS: Add extra Tailwind functionality (none needed for now)
   plugins: [],
-  
-  // CORE PLUGINS: Control which CSS features are enabled
-  corePlugins: {
-    // preflight: false - Disable Tailwind's CSS reset
-    // React Native has its own styling system, so we don't need web CSS resets
-    preflight: false,
-  },
 };
