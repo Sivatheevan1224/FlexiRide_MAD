@@ -27,7 +27,7 @@ export default function ViewBookingsScreen() {
     
     if (result.success && result.bookings) {
       // Fetch vehicle details for each booking to get images
-      const bookingsWithImages = await Promise.all(
+      const bookingsWithImages: Booking[] = await Promise.all(
         result.bookings.map(async (booking) => {
           let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
           
@@ -38,6 +38,14 @@ export default function ViewBookingsScreen() {
             }
           }
 
+          // Map Firebase booking status to BookingCard status
+          const mapStatus = (status: string): 'pending' | 'confirmed' | 'completed' | 'cancelled' => {
+            if (status === 'active') return 'confirmed';
+            if (status === 'completed') return 'completed';
+            if (status === 'cancelled') return 'cancelled';
+            return 'pending';
+          };
+
           return {
             id: booking.id || '',
             vehicleName: booking.vehicleName || 'Vehicle',
@@ -45,9 +53,7 @@ export default function ViewBookingsScreen() {
             pickupDate: new Date(booking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             returnDate: new Date(booking.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             totalPrice: booking.totalPrice,
-            status: booking.status === 'active' ? 'confirmed' : 
-                    booking.status === 'completed' ? 'completed' : 
-                    booking.status === 'cancelled' ? 'cancelled' : 'pending',
+            status: mapStatus(booking.status),
           };
         })
       );
