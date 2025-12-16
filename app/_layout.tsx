@@ -21,10 +21,9 @@ export default function RootLayout() {
         <Stack.Screen name="booking-success" options={{ headerShown: false }} />
         <Stack.Screen name="my-bookings" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ headerShown: false }} />
-        <Stack.Screen name="admin/home" options={{ headerShown: false }} />
-        <Stack.Screen name="admin/add-vehicle" options={{ headerShown: false }} />
-        <Stack.Screen name="admin/manage-vehicles" options={{ headerShown: false }} />
-        <Stack.Screen name="admin/view-bookings" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+        <Stack.Screen name="support" options={{ headerShown: false }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </>
