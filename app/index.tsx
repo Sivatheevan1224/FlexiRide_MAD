@@ -165,7 +165,8 @@ export default function WelcomeScreen() {
           {/* Login Button */}
           <TouchableOpacity
             onPress={() => router.push('/login')}
-            className="bg-blue-600 py-4 rounded-xl shadow-md active:opacity-80 mb-4"
+            className="bg-blue-600 py-4 rounded-xl active:opacity-80 mb-4"
+            style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
           >
             <Text className="text-white text-center text-lg font-semibold">
               Get Started
