@@ -102,7 +102,7 @@ export default function SupportScreen() {
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-            <View className="flex-row items-center space-x-4 mb-4">
+            <View className="flex-row items-center mb-4" style={{ gap: 16 }}>
               <TouchableOpacity onPress={() => router.back()}>
                 <Ionicons name="arrow-back" size={24} color="#ffffff" />
               </TouchableOpacity>
@@ -113,15 +113,15 @@ export default function SupportScreen() {
             </Text>
           </View>
 
-          <View className="px-6 py-6 space-y-6">
+          <View className="px-6 py-6" style={{ gap: 24 }}>
             {/* Quick Contact Options */}
             <View>
               <Text className="text-neutral-800 text-lg font-bold mb-3">Contact Us</Text>
-              <View className="space-y-3">
+              <View style={{ gap: 12 }}>
                 {contactOptions.map((option, index) => (
                   <TouchableOpacity key={index} onPress={option.action}>
                     <Card>
-                      <View className="flex-row items-center space-x-4">
+                      <View className="flex-row items-center" style={{ gap: 16 }}>
                         <View className={`${option.color} w-12 h-12 rounded-xl items-center justify-center`}>
                           <Ionicons name={option.icon as any} size={24} color="#ffffff" />
                         </View>
@@ -157,7 +157,7 @@ export default function SupportScreen() {
                           : 'bg-white border-slate-300'
                       }`}
                     >
-                      <View className="flex-row items-center space-x-1">
+                      <View className="flex-row items-center" style={{ gap: 4 }}>
                         <Ionicons
                           name={category.icon as any}
                           size={16}
@@ -196,10 +196,10 @@ export default function SupportScreen() {
               <Text className="text-neutral-800 text-lg font-bold mb-3">
                 Frequently Asked Questions
               </Text>
-              <View className="space-y-3">
+              <View style={{ gap: 12 }}>
                 {faqItems.map((item, index) => (
                   <Card key={index}>
-                    <View className="flex-row items-start space-x-3">
+                    <View className="flex-row items-start" style={{ gap: 12 }}>
                       <View className="bg-blue-50 rounded-full p-2 mt-1">
                         <Ionicons name="help-circle" size={20} color="#2563eb" />
                       </View>
@@ -219,7 +219,7 @@ export default function SupportScreen() {
 
             {/* Business Hours */}
             <Card>
-              <View className="flex-row items-start space-x-3">
+              <View className="flex-row items-start" style={{ gap: 12 }}>
                 <View className="bg-green-50 rounded-full p-2">
                   <Ionicons name="time" size={20} color="#22c55e" />
                 </View>

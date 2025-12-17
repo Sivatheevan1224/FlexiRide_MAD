@@ -27,7 +27,7 @@ export default function ViewBookingsScreen() {
     
     if (result.success && result.bookings) {
       // Fetch vehicle details for each booking to get images
-      const bookingsWithImages = await Promise.all(
+      const bookingsWithImages: Booking[] = await Promise.all(
         result.bookings.map(async (booking) => {
           let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
           
@@ -38,6 +38,14 @@ export default function ViewBookingsScreen() {
             }
           }
 
+          // Map Firebase booking status to BookingCard status
+          const mapStatus = (status: string): 'pending' | 'confirmed' | 'completed' | 'cancelled' => {
+            if (status === 'active') return 'confirmed';
+            if (status === 'completed') return 'completed';
+            if (status === 'cancelled') return 'cancelled';
+            return 'pending';
+          };
+
           return {
             id: booking.id || '',
             vehicleName: booking.vehicleName || 'Vehicle',
@@ -45,9 +53,7 @@ export default function ViewBookingsScreen() {
             pickupDate: new Date(booking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             returnDate: new Date(booking.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             totalPrice: booking.totalPrice,
-            status: booking.status === 'active' ? 'confirmed' : 
-                    booking.status === 'completed' ? 'completed' : 
-                    booking.status === 'cancelled' ? 'cancelled' : 'pending',
+            status: mapStatus(booking.status),
           };
         })
       );
@@ -147,8 +153,8 @@ export default function ViewBookingsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-6">
-            <TouchableOpacity onPress={() => router.back()}>
+          <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/admin/home')}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text className="text-white text-2xl font-bold">All Bookings</Text>
@@ -176,41 +182,43 @@ export default function ViewBookingsScreen() {
           </ScrollView>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6">
           {/* Stats */}
-          <Card>
-            <View className="flex-row justify-between">
-              <View className="items-center">
-                <Text className="text-neutral-500 text-xs">Total</Text>
-                <Text className="text-neutral-800 font-bold text-xl">{stats.total}</Text>
+          <View style={{ marginBottom: 24 }}>
+            <Card>
+              <View className="flex-row justify-between">
+                <View className="items-center">
+                  <Text className="text-neutral-500 text-xs">Total</Text>
+                  <Text className="text-neutral-800 font-bold text-xl">{stats.total}</Text>
+                </View>
+                <View className="w-px bg-slate-200" />
+                <View className="items-center">
+                  <Text className="text-neutral-500 text-xs">Pending</Text>
+                  <Text className="text-yellow-600 font-bold text-xl">{stats.pending}</Text>
+                </View>
+                <View className="w-px bg-slate-200" />
+                <View className="items-center">
+                  <Text className="text-neutral-500 text-xs">Confirmed</Text>
+                  <Text className="text-blue-600 font-bold text-xl">{stats.confirmed}</Text>
+                </View>
+                <View className="w-px bg-slate-200" />
+                <View className="items-center">
+                  <Text className="text-neutral-500 text-xs">Completed</Text>
+                  <Text className="text-green-600 font-bold text-xl">{stats.completed}</Text>
+                </View>
               </View>
-              <View className="w-px bg-slate-200" />
-              <View className="items-center">
-                <Text className="text-neutral-500 text-xs">Pending</Text>
-                <Text className="text-yellow-600 font-bold text-xl">{stats.pending}</Text>
-              </View>
-              <View className="w-px bg-slate-200" />
-              <View className="items-center">
-                <Text className="text-neutral-500 text-xs">Confirmed</Text>
-                <Text className="text-blue-600 font-bold text-xl">{stats.confirmed}</Text>
-              </View>
-              <View className="w-px bg-slate-200" />
-              <View className="items-center">
-                <Text className="text-neutral-500 text-xs">Completed</Text>
-                <Text className="text-green-600 font-bold text-xl">{stats.completed}</Text>
-              </View>
-            </View>
-          </Card>
+            </Card>
+          </View>
 
           {/* Bookings List */}
           {filteredBookings.length > 0 ? (
-            <View className="space-y-4">
+            <View>
               {filteredBookings.map((booking) => (
-                <View key={booking.id}>
+                <View key={booking.id} style={{ marginBottom: 16 }}>
                   <BookingCard booking={booking} />
                   {/* Admin Actions */}
                   {booking.status === 'pending' && (
-                    <View className="flex-row space-x-2 mt-2">
+                    <View className="flex-row mt-2" style={{ gap: 8 }}>
                       <View className="flex-1">
                         <Button
                           title="Approve"

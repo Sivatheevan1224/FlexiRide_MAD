@@ -1,3 +1,24 @@
+/**
+ * GLOBAL CSS FILE
+ * ================
+ * 
+ * PURPOSE: This file imports Tailwind CSS directives that enable
+ * NativeWind styling throughout the entire app.
+ * 
+ * WHY WE NEED IT:
+ * - Required for NativeWind/Tailwind to work in React Native
+ * - Imported in _layout.tsx to apply globally
+ * - Enables className prop on all components
+ * 
+ * WHAT EACH DIRECTIVE DOES:
+ */
+
+/* @tailwind base - Injects Tailwind's base styles (typography, box-sizing, etc.) */
 @tailwind base;
+
+/* @tailwind components - Enables component classes (though we mostly use utilities) */
 @tailwind components;
+
+/* @tailwind utilities - Enables all utility classes like bg-*, text-*, p-*, m-*, etc.
+   This is the most important directive - it's what makes classes like "bg-blue-600" work */
 @tailwind utilities;

@@ -100,7 +100,7 @@ export default function AddVehicleScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4">
+          <View className="flex-row items-center" style={{ gap: 16 }}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -108,7 +108,7 @@ export default function AddVehicleScreen() {
           </View>
         </View>
 
-        <View className="px-6 py-6 space-y-6">
+        <View className="px-6 py-6" style={{ gap: 24 }}>
           {/* Image Upload */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Vehicle Image</Text>
@@ -130,7 +130,7 @@ export default function AddVehicleScreen() {
           {/* Basic Information */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Basic Information</Text>
-            <View className="space-y-4">
+            <View style={{ gap: 16 }}>
               <Input
                 label="Vehicle Name"
                 placeholder="e.g., Honda City"
@@ -142,7 +142,7 @@ export default function AddVehicleScreen() {
               {/* Type Selection */}
               <View>
                 <Text className="text-neutral-700 font-medium text-base mb-2">Vehicle Type</Text>
-                <View className="flex-row space-x-3">
+                <View className="flex-row" style={{ gap: 12 }}>
                   <TouchableOpacity
                     onPress={() => setType('car')}
                     className={`flex-1 py-3 px-4 rounded-xl border-2 ${
@@ -192,7 +192,7 @@ export default function AddVehicleScreen() {
           {/* Specifications */}
           <Card>
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Specifications</Text>
-            <View className="space-y-4">
+            <View style={{ gap: 16 }}>
               <Input
                 label="Fuel Type"
                 placeholder="e.g., Petrol, Diesel, Electric"

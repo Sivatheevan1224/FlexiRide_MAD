@@ -37,7 +37,7 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
 
   return (
     <Card padding="md" className={className}>
-      <View className="space-y-3">
+      <View>
         {/* Header with Status */}
         <View className="flex-row justify-between items-center">
           <Text className="text-neutral-800 font-semibold text-base">
@@ -51,7 +51,7 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
         </View>
 
         {/* Vehicle Info */}
-        <View className="flex-row space-x-3">
+        <View className="flex-row" style={{ gap: 12, marginTop: 12 }}>
           <View className="w-20 h-20 bg-slate-100 rounded-lg overflow-hidden">
             <Image
               source={{ uri: booking.vehicleImage }}
@@ -63,15 +63,15 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
             <Text className="text-blue-600 font-bold text-lg">
               Rs. {booking.totalPrice}
             </Text>
-            <Text className="text-neutral-500 text-sm mt-1">
+            <Text className="text-neutral-500 text-sm" style={{ marginTop: 4 }}>
               Total Amount
             </Text>
           </View>
         </View>
 
         {/* Dates */}
-        <View className="flex-row justify-between pt-3 border-t border-slate-200">
-          <View className="flex-row items-center space-x-2">
+        <View className="flex-row justify-between pt-3 border-t border-slate-200" style={{ marginTop: 12 }}>
+          <View className="flex-row items-center" style={{ gap: 8 }}>
             <Ionicons name="calendar-outline" size={16} color="#64748b" />
             <View>
               <Text className="text-neutral-500 text-xs">Pickup</Text>
@@ -80,7 +80,7 @@ export default function BookingCard({ booking, className = '' }: BookingCardProp
               </Text>
             </View>
           </View>
-          <View className="flex-row items-center space-x-2">
+          <View className="flex-row items-center" style={{ gap: 8 }}>
             <Ionicons name="calendar-outline" size={16} color="#64748b" />
             <View>
               <Text className="text-neutral-500 text-xs">Return</Text>

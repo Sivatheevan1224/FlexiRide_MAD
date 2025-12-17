@@ -51,8 +51,18 @@ export default function HomeScreen() {
   };
 
   const filteredVehicles = vehicles.filter((vehicle) => {
-    if (activeTab === 'all') return true;
-    return vehicle.type === activeTab.slice(0, -1); // 'cars' -> 'car', 'bikes' -> 'bike'
+    // Filter by tab
+    const matchesTab = activeTab === 'all' || vehicle.type === activeTab.slice(0, -1); // 'cars' -> 'car', 'bikes' -> 'bike'
+    
+    // Filter by search query
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch = query === '' || 
+      vehicle.name.toLowerCase().includes(query) ||
+      vehicle.type.toLowerCase().includes(query) ||
+      vehicle.fuel.toLowerCase().includes(query) ||
+      vehicle.gear.toLowerCase().includes(query);
+    
+    return matchesTab && matchesSearch;
   });
 
   return (
@@ -87,7 +97,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Tabs */}
-        <View className="flex-row space-x-3 px-6 mt-6">
+        <View className="flex-row px-6 mt-6" style={{ gap: 12 }}>
           {(['all', 'cars', 'bikes'] as const).map((tab) => (
             <TouchableOpacity
               key={tab}
@@ -122,14 +132,24 @@ export default function HomeScreen() {
               <ActivityIndicator size="large" color="#2563eb" />
               <Text className="text-center text-neutral-500 mt-4">Loading vehicles...</Text>
             </View>
+          ) : filteredVehicles.length === 0 ? (
+            <View className="py-12">
+              <Text className="text-center text-neutral-500">No vehicles found</Text>
+              {searchQuery && (
+                <Text className="text-center text-neutral-400 text-sm mt-2">
+                  Try a different search term
+                </Text>
+              )}
+            </View>
           ) : (
-            <View className="space-y-4 pb-6">
+            <View className="pb-6">
               {filteredVehicles.map((vehicle) => (
-                <VehicleCard
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  onPress={() => router.push(`/vehicle-details?id=${vehicle.id}`)}
-                />
+                <View key={vehicle.id} style={{ marginBottom: 16 }}>
+                  <VehicleCard
+                    vehicle={vehicle}
+                    onPress={() => router.push(`/vehicle-details?id=${vehicle.id}`)}
+                  />
+                </View>
               ))}
             </View>
           )}

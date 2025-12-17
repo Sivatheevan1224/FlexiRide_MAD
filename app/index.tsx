@@ -2,16 +2,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, LayoutChangeEvent, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const { width } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [sliderWidth, setSliderWidth] = useState(400); // Default width
 
   const slides = [
     {
@@ -31,13 +30,19 @@ export default function WelcomeScreen() {
     },
   ];
 
+  // Get actual container width on layout
+  const onSliderLayout = (event: LayoutChangeEvent) => {
+    const { width } = event.nativeEvent.layout;
+    setSliderWidth(width);
+  };
+
   // Auto-scroll slider
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % slides.length;
         scrollViewRef.current?.scrollTo({
-          x: nextIndex * width,
+          x: nextIndex * sliderWidth,
           animated: true,
         });
         return nextIndex;
@@ -45,13 +50,13 @@ export default function WelcomeScreen() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [sliderWidth]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Image Slider */}
-        <View className="h-80 bg-slate-100">
+        <View className="h-80 bg-slate-100" onLayout={onSliderLayout}>
           <ScrollView
             ref={scrollViewRef}
             horizontal
@@ -63,15 +68,15 @@ export default function WelcomeScreen() {
             )}
             scrollEventThrottle={16}
             onMomentumScrollEnd={(event) => {
-              const index = Math.round(event.nativeEvent.contentOffset.x / width);
+              const index = Math.round(event.nativeEvent.contentOffset.x / sliderWidth);
               setCurrentIndex(index);
             }}
           >
             {slides.map((slide, index) => (
-              <View key={index} className="relative" style={{ width }}>
+              <View key={index} className="relative" style={{ width: sliderWidth, height: 320 }}>
                 <Image
                   source={slide.image}
-                  className="w-full h-full"
+                  style={{ width: sliderWidth, height: 320 }}
                   resizeMode="cover"
                 />
                 {/* Overlay */}
@@ -84,7 +89,7 @@ export default function WelcomeScreen() {
           </ScrollView>
 
           {/* Pagination Dots */}
-          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center space-x-2">
+          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center" style={{ gap: 8 }}>
             {slides.map((_, index) => (
               <View
                 key={index}
@@ -120,9 +125,9 @@ export default function WelcomeScreen() {
           </View>
 
           {/* Features */}
-          <View className="space-y-3 mb-6">
-            <View className="flex-row items-center bg-blue-50 p-3 rounded-xl">
-              <View className="bg-blue-600 rounded-full p-2.5 mr-3">
+          <View className="mb-6">
+            <View className="flex-row items-center bg-blue-50 p-3 rounded-xl" style={{ marginBottom: 12 }}>
+              <View className="bg-blue-600 rounded-full p-2.5" style={{ marginRight: 12 }}>
                 <Ionicons name="car-sport" size={20} color="#ffffff" />
               </View>
               <View className="flex-1">
@@ -131,8 +136,8 @@ export default function WelcomeScreen() {
               </View>
             </View>
 
-            <View className="flex-row items-center bg-green-50 p-3 rounded-xl">
-              <View className="bg-green-600 rounded-full p-2.5 mr-3">
+            <View className="flex-row items-center bg-green-50 p-3 rounded-xl" style={{ marginBottom: 12 }}>
+              <View className="bg-green-600 rounded-full p-2.5" style={{ marginRight: 12 }}>
                 <Ionicons name="shield-checkmark" size={20} color="#ffffff" />
               </View>
               <View className="flex-1">
@@ -141,8 +146,8 @@ export default function WelcomeScreen() {
               </View>
             </View>
 
-            <View className="flex-row items-center bg-purple-50 p-3 rounded-xl">
-              <View className="bg-purple-600 rounded-full p-2.5 mr-3">
+            <View className="flex-row items-center bg-purple-50 p-3 rounded-xl" style={{ marginBottom: 12 }}>
+              <View className="bg-purple-600 rounded-full p-2.5" style={{ marginRight: 12 }}>
                 <Ionicons name="cash" size={20} color="#ffffff" />
               </View>
               <View className="flex-1">
@@ -152,7 +157,7 @@ export default function WelcomeScreen() {
             </View>
 
             <View className="flex-row items-center bg-orange-50 p-3 rounded-xl">
-              <View className="bg-orange-600 rounded-full p-2.5 mr-3">
+              <View className="bg-orange-600 rounded-full p-2.5" style={{ marginRight: 12 }}>
                 <Ionicons name="time" size={20} color="#ffffff" />
               </View>
               <View className="flex-1">
@@ -165,7 +170,8 @@ export default function WelcomeScreen() {
           {/* Login Button */}
           <TouchableOpacity
             onPress={() => router.push('/login')}
-            className="bg-blue-600 py-4 rounded-xl shadow-md active:opacity-80 mb-4"
+            className="bg-blue-600 py-4 rounded-xl active:opacity-80 mb-4"
+            style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}
           >
             <Text className="text-white text-center text-lg font-semibold">
               Get Started

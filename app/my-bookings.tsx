@@ -71,7 +71,7 @@ export default function MyBookingsScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="flex-row items-center space-x-4 mb-6">
+          <View className="flex-row items-center mb-6" style={{ gap: 16 }}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -79,7 +79,7 @@ export default function MyBookingsScreen() {
           </View>
 
           {/* Tabs */}
-          <View className="flex-row space-x-3">
+          <View className="flex-row" style={{ gap: 12 }}>
             {(['all', 'upcoming', 'completed'] as const).map((tab) => (
               <TouchableOpacity
                 key={tab}
@@ -107,9 +107,11 @@ export default function MyBookingsScreen() {
               <Text className="text-neutral-500 mt-4">Loading bookings...</Text>
             </View>
           ) : filteredBookings.length > 0 ? (
-            <View className="space-y-4">
+            <View>
               {filteredBookings.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} />
+                <View key={booking.id} style={{ marginBottom: 16 }}>
+                  <BookingCard booking={booking} />
+                </View>
               ))}
             </View>
           ) : (
