@@ -23,14 +23,18 @@
  *    - CDN for fast image loading
  * 
  * HOW IT WORKS:
+
  * - firebaseConfig contains project credentials from environment variables
+
  * - initializeApp() creates the Firebase app instance
  * - getAuth/getFirestore/getStorage initialize specific services
  * - We export these services to use throughout the app
  * 
  * SECURITY NOTE:
+
  * - API keys are loaded from .env file (not committed to git)
  * - Copy .env.example to .env and fill in your values
+
  * - Security is enforced by Firebase Security Rules (in Firebase Console)
  * - Never include service account keys in client code
  */
@@ -42,6 +46,7 @@ import { getStorage } from 'firebase/storage';
 
 /**
  * Firebase Configuration Object
+
  * These values come from environment variables (.env file)
  * Project: flexiride-4e206
  * 
@@ -56,6 +61,7 @@ const firebaseConfig = {
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID, // Cloud Messaging sender ID
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,                // Web app identifier
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID // Google Analytics ID
+
 };
 
 // Initialize the Firebase app with our configuration
