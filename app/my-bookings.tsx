@@ -6,7 +6,7 @@ import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BookingCard, { Booking } from '../components/ui/booking-card';
 import { getCurrentUser } from '../firebase/auth';
-import { getUserBookings } from '../firebase/bookings';
+import { getUserBookings, updateBookingStatus } from '../firebase/bookings';
 import { getVehicleById } from '../firebase/vehicles';
 
 export default function MyBookingsScreen() {
@@ -30,9 +30,22 @@ export default function MyBookingsScreen() {
     const result = await getUserBookings(currentUser.uid);
     
     if (result.success && result.bookings) {
-      // Fetch vehicle details for each booking to get images
-      const bookingsWithImages = await Promise.all(
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Check for expired bookings and update them
+      const updatedBookings = await Promise.all(
         result.bookings.map(async (booking) => {
+          let currentStatus = booking.status;
+          const returnDate = new Date(booking.returnDate);
+          returnDate.setHours(0, 0, 0, 0);
+
+          // If booking is active but return date is passed, mark as completed
+          if (booking.status === 'active' && returnDate < today && booking.id) {
+            await updateBookingStatus(booking.id, 'completed');
+            currentStatus = 'completed';
+          }
+
           let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
           
           if (booking.vehicleId) {
@@ -49,12 +62,12 @@ export default function MyBookingsScreen() {
             pickupDate: new Date(booking.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             returnDate: new Date(booking.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
             totalPrice: booking.totalPrice,
-            status: booking.status === 'active' ? 'confirmed' : booking.status === 'completed' ? 'completed' : 'pending',
+            status: (currentStatus === 'active' ? 'confirmed' : currentStatus === 'completed' ? 'completed' : 'pending') as 'confirmed' | 'pending' | 'completed',
           };
         })
       );
       
-      setBookings(bookingsWithImages);
+      setBookings(updatedBookings);
     }
     setLoading(false);
   };
