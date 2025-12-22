@@ -31,10 +31,8 @@ export default function LoginScreen() {
       
       if (result.success && result.user && result.userData) {
         console.log('Login successful:', result.userData);
-        
         // Save session to AsyncStorage
         await setSession(result.user, result.userData);
-        
         // Navigate based on user role
         if (result.userData.role === 'admin') {
           console.log('Navigating to Admin Dashboard');
@@ -46,17 +44,18 @@ export default function LoginScreen() {
       } else {
         const errorMessage = result.error || '';
         let message = 'Invalid email or password.'; // Generic message for safety
-        
+
         if (errorMessage.includes('auth/network-request-failed')) {
           message = 'Network error. Please check your internet connection.';
         } else if (errorMessage.includes('auth/too-many-requests')) {
           message = 'Access blocked due to too many failed attempts. Follow instructions sent to your email or try again later.';
         }
-        
+
         Alert.alert('Login Failed', message);
       }
     } catch (error: any) {
       console.error('Login error:', error);
+
       
       let message = 'An error occurred during login';
       const errorMessage = error.message || '';
