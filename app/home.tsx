@@ -8,6 +8,8 @@ import VehicleCard, { Vehicle } from '../components/ui/vehicle-card';
 import { getCurrentUser, getCurrentUserData } from '../firebase/auth';
 import { getAllVehicles } from '../firebase/vehicles';
 
+import { getActiveBookings } from '../firebase/bookings';
+
 export default function HomeScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,6 +34,30 @@ export default function HomeScreen() {
       }
     }
 
+    // Load active bookings to check availability
+    const bookingsResult = await getActiveBookings();
+    const activeBookings = bookingsResult.bookings || [];
+    
+    // Calculate unavailable vehicle IDs for TODAY
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const unavailableVehicleIds = new Set<string>();
+    
+    activeBookings.forEach(booking => {
+      const start = new Date(booking.pickupDate);
+      const end = new Date(booking.returnDate);
+      
+      // Normalize booking dates to ensure correct comparison
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      
+      // If today falls within the booking range, the vehicle is unavailable
+      if (today >= start && today <= end) {
+        unavailableVehicleIds.add(booking.vehicleId);
+      }
+    });
+
     // Load vehicles
     const vehiclesResult = await getAllVehicles();
     if (vehiclesResult.success && vehiclesResult.vehicles) {
@@ -44,6 +70,7 @@ export default function HomeScreen() {
         fuel: v.fuelType || 'Petrol',
         gear: v.transmission || 'Manual',
         rating: 4.5,
+        available: !unavailableVehicleIds.has(v.id || ''), 
       }));
       setVehicles(formattedVehicles);
     }

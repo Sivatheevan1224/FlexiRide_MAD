@@ -23,13 +23,19 @@
  *    - CDN for fast image loading
  * 
  * HOW IT WORKS:
- * - firebaseConfig contains project credentials from Firebase Console
+
+ * - firebaseConfig contains project credentials from environment variables
+ 
  * - initializeApp() creates the Firebase app instance
  * - getAuth/getFirestore/getStorage initialize specific services
  * - We export these services to use throughout the app
  * 
  * SECURITY NOTE:
- * - These config values are safe to include in client code
+
+
+ * - API keys are loaded from .env file (not committed to git)
+ * - Copy .env.example to .env and fill in your values
+
  * - Security is enforced by Firebase Security Rules (in Firebase Console)
  * - Never include service account keys in client code
  */
@@ -41,17 +47,21 @@ import { getStorage } from 'firebase/storage';
 
 /**
  * Firebase Configuration Object
- * These values come from: Firebase Console → Project Settings → Your apps → Web app
+ main
+ * These values come from environment variables (.env file)
  * Project: flexiride-4e206
+ * 
+ * ⚠️ SECURITY: API keys are loaded from .env file (not committed to git)
+ * Copy .env.example to .env and fill in your values
  */
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,              // API key for Firebase services
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,      // Auth popup/redirect domain
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,        // Unique project identifier
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET, // Cloud Storage bucket
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID, // Cloud Messaging sender ID
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,                // Web app identifier
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID, // Google Analytics ID
 };
 
 // Initialize the Firebase app with our configuration

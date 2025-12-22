@@ -58,6 +58,7 @@ export interface UserData {
   name: string;     // Display name
   role: UserRole;   // 'user' = regular customer, 'admin' = has admin panel access
   createdAt: string; // When account was created (ISO date string)
+  isDisabled?: boolean; // true = account disabled
 }
 
 /**
@@ -79,14 +80,14 @@ export const signUp = async (email: string, password: string, name: string): Pro
     // Step 1: Create user in Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     // Step 2: Update the user's profile with their name
     await updateProfile(user, { displayName: name });
-    
+
     // Step 3: Determine role based on email
     // If email contains 'admin', give admin role (simple approach)
     const role: UserRole = email.toLowerCase().includes('admin') ? 'admin' : 'user';
-    
+
     // Step 4: Create user document in Firestore 'users' collection
     // This stores additional data that Firebase Auth doesn't have
     const userData: UserData = {
@@ -96,10 +97,10 @@ export const signUp = async (email: string, password: string, name: string): Pro
       role: role,
       createdAt: new Date().toISOString(),
     };
-    
+
     // setDoc creates or overwrites the document with the user's UID as the document ID
     await setDoc(doc(db, 'users', user.uid), userData);
-    
+
     return { success: true, user, userData };
   } catch (error: any) {
     console.error('Signup error:', error);
@@ -125,10 +126,10 @@ export const signIn = async (email: string, password: string): Promise<{
     // Step 1: Authenticate with Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     // Step 2: Fetch user's extra data from Firestore (to get role)
     const userDoc = await getDoc(doc(db, 'users', user.uid));
-    
+
     if (userDoc.exists()) {
       // User document exists - return it
       const userData = userDoc.data() as UserData;
@@ -184,7 +185,7 @@ export const getCurrentUserData = async (uid: string): Promise<{
 }> => {
   try {
     const userDoc = await getDoc(doc(db, 'users', uid));
-    
+
     if (userDoc.exists()) {
       const userData = userDoc.data() as UserData;
       return { success: true, userData };
