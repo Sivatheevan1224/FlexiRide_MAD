@@ -158,6 +158,7 @@ export default function SignupScreen() {
               secureTextEntry
               icon="lock-closed-outline"
             />
+            <Text className="text-xs text-neutral-500 mb-2 ml-1">Password must be at least 6 characters long.</Text>
 
             <Input
               label="Confirm Password"
