@@ -1,11 +1,12 @@
 // Manage Users Screen (Admin)
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../../components/ui/card';
+import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebase/config';
 
 interface User {
@@ -50,6 +51,23 @@ export default function ManageUsersScreen() {
     setLoading(false);
   };
 
+  const { user: currentUser } = useAuth();
+  
+  const stats = {
+    total: users.length,
+    users: users.filter(u => u.role === 'user').length,
+    admins: users.filter(u => u.role === 'admin').length,
+    disabled: users.filter((u: any) => u.isDisabled).length,
+  };
+
+
+  const filteredUsers = users.filter((user) => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'users') return user.role === 'user';
+    if (activeTab === 'admins') return user.role === 'admin';
+    return true;
+  });
+
   const handleChangeRole = (user: User) => {
     const newRole = user.role === 'admin' ? 'user' : 'admin';
     Alert.alert(
@@ -75,40 +93,32 @@ export default function ManageUsersScreen() {
     );
   };
 
-  const handleDeleteUser = (user: User) => {
+  const handleToggleStatus = (user: any) => {
+    const isCurrentlyDisabled = user.isDisabled;
+    const action = isCurrentlyDisabled ? 'Enable' : 'Disable';
+    
     Alert.alert(
-      'Delete User',
-      `Are you sure you want to delete ${user.name}? This action cannot be undone.`,
+      `${action} User`,
+      `Are you sure you want to ${action.toLowerCase()} ${user.name}? ${!isCurrentlyDisabled ? 'They will not be able to login.' : 'They will be able to login again.'}`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: action,
+          style: isCurrentlyDisabled ? 'default' : 'destructive',
           onPress: async () => {
             try {
-              await deleteDoc(doc(db, 'users', user.uid));
-              Alert.alert('Success', 'User deleted successfully');
+              await updateDoc(doc(db, 'users', user.uid), {
+                isDisabled: !isCurrentlyDisabled
+              });
+              Alert.alert('Success', `User ${action.toLowerCase()}d successfully`);
               loadUsers();
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete user');
+              Alert.alert('Error', `Failed to ${action.toLowerCase()} user`);
             }
           }
         }
       ]
     );
-  };
-
-  const filteredUsers = users.filter((user) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'users') return user.role === 'user';
-    if (activeTab === 'admins') return user.role === 'admin';
-    return true;
-  });
-
-  const stats = {
-    total: users.length,
-    users: users.filter(u => u.role === 'user').length,
-    admins: users.filter(u => u.role === 'admin').length,
   };
 
   return (
@@ -185,7 +195,7 @@ export default function ManageUsersScreen() {
                       <View className="flex-1">
                         <View className="flex-row items-center mb-1" style={{ gap: 8 }}>
                           <Text className="text-neutral-800 font-semibold text-base">
-                            {user.name}
+                            {user.name} {user.uid === currentUser?.uid ? '(You)' : ''}
                           </Text>
                           <View
                             className={`px-2 py-0.5 rounded-full ${
@@ -200,6 +210,11 @@ export default function ManageUsersScreen() {
                               {user.role}
                             </Text>
                           </View>
+                          {(user as any).isDisabled && (
+                             <View className="bg-red-100 px-2 py-0.5 rounded-full">
+                               <Text className="text-red-700 text-xs font-medium">Disabled</Text>
+                             </View>
+                          )}
                         </View>
                         <Text className="text-neutral-600 text-sm mb-1">{user.email}</Text>
                         <Text className="text-neutral-400 text-xs">
@@ -213,31 +228,35 @@ export default function ManageUsersScreen() {
                     </View>
 
                     {/* Action Buttons */}
-                    <View className="flex-row pt-2 border-t border-slate-100" style={{ gap: 8 }}>
-                      <TouchableOpacity
-                        onPress={() => handleChangeRole(user)}
-                        className="flex-1 bg-blue-50 px-3 py-2 rounded-lg flex-row items-center justify-center"
-                        style={{ gap: 4 }}
-                      >
-                        <Ionicons
-                          name={user.role === 'admin' ? 'person' : 'shield-checkmark'}
-                          size={16}
-                          color="#2563eb"
-                        />
-                        <Text className="text-blue-600 text-xs font-medium">
-                          Make {user.role === 'admin' ? 'User' : 'Admin'}
-                        </Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity
-                        onPress={() => handleDeleteUser(user)}
-                        className="bg-red-50 px-3 py-2 rounded-lg flex-row items-center"
-                        style={{ gap: 4 }}
-                      >
-                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                        <Text className="text-red-600 text-xs font-medium">Delete</Text>
-                      </TouchableOpacity>
-                    </View>
+                    {user.uid !== currentUser?.uid && (
+                        <View className="flex-row pt-2 border-t border-slate-100" style={{ gap: 8 }}>
+                        <TouchableOpacity
+                            onPress={() => handleChangeRole(user)}
+                            className="flex-1 bg-blue-50 px-3 py-2 rounded-lg flex-row items-center justify-center"
+                            style={{ gap: 4 }}
+                        >
+                            <Ionicons
+                            name={user.role === 'admin' ? 'person' : 'shield-checkmark'}
+                            size={16}
+                            color="#2563eb"
+                            />
+                            <Text className="text-blue-600 text-xs font-medium">
+                            Make {user.role === 'admin' ? 'User' : 'Admin'}
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                            onPress={() => handleToggleStatus(user)}
+                            className={`${(user as any).isDisabled ? 'bg-green-50' : 'bg-red-50'} px-3 py-2 rounded-lg flex-row items-center`}
+                            style={{ gap: 4 }}
+                        >
+                            <Ionicons name={(user as any).isDisabled ? "checkmark-circle" : "ban"} size={16} color={(user as any).isDisabled ? "#16a34a" : "#ef4444"} />
+                            <Text className={`${(user as any).isDisabled ? 'text-green-600' : 'text-red-600'} text-xs font-medium`}>
+                                {(user as any).isDisabled ? 'Enable' : 'Disable'}
+                            </Text>
+                        </TouchableOpacity>
+                        </View>
+                    )}
                   </View>
                   </Card>
                 </View>

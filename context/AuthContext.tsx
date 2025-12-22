@@ -16,8 +16,9 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useSegments } from 'expo-router';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { signOut as firebaseSignOut, onAuthStateChanged, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { getCurrentUserData, UserData } from '../firebase/auth';
 import { auth } from '../firebase/config';
 
@@ -98,20 +99,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // User is signed in
-        setUser(firebaseUser);
         
         // Try to get user data from storage first, then Firebase
+        let currentData: UserData | null = null;
         const savedUserData = await AsyncStorage.getItem(USER_DATA_KEY);
         
         if (savedUserData) {
-          setUserData(JSON.parse(savedUserData));
+          currentData = JSON.parse(savedUserData);
         } else {
           // Fetch from Firestore
           const result = await getCurrentUserData(firebaseUser.uid);
           if (result.success && result.userData) {
-            await setSession(firebaseUser, result.userData);
+            currentData = result.userData;
           }
         }
+
+        // Check if account is disabled
+        if (currentData && currentData.isDisabled) {
+           console.log('Account is disabled. Logging out.');
+           setUser(null);
+           setUserData(null);
+           await clearSession();
+           await firebaseSignOut(auth);
+           Alert.alert('Account Disabled', 'Your account has been disabled by an administrator.');
+        } else if (currentData) {
+           setUser(firebaseUser);
+           setUserData(currentData);
+           await setSession(firebaseUser, currentData);
+        }
+
       } else {
         // User is signed out
         setUser(null);

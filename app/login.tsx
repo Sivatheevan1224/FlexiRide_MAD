@@ -44,11 +44,32 @@ export default function LoginScreen() {
           router.replace('/home' as any);
         }
       } else {
-        Alert.alert('Login Failed', result.error || 'Invalid credentials');
+        const errorMessage = result.error || '';
+        let message = 'Invalid email or password.'; // Generic message for safety
+        
+        if (errorMessage.includes('auth/network-request-failed')) {
+          message = 'Network error. Please check your internet connection.';
+        } else if (errorMessage.includes('auth/too-many-requests')) {
+          message = 'Access blocked due to too many failed attempts. Follow instructions sent to your email or try again later.';
+        }
+        
+        Alert.alert('Login Failed', message);
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      Alert.alert('Error', error.message || 'An error occurred during login');
+      
+      let message = 'An error occurred during login';
+      const errorMessage = error.message || '';
+
+      if (errorMessage.includes('auth/network-request-failed')) {
+        message = 'Network error. Please check your internet connection.';
+      } else if (errorMessage.includes('auth/too-many-requests')) {
+        message = 'Access blocked due to too many failed attempts. Try again later.';
+      } else {
+        message = 'Invalid email or password.';
+      }
+
+      Alert.alert('Login Failed', message);
     } finally {
       setLoading(false);
     }

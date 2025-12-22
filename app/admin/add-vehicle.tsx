@@ -1,5 +1,6 @@
 // Add Vehicle Screen
 import { Ionicons } from '@expo/vector-icons';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -43,15 +44,38 @@ export default function AddVehicleScreen() {
   }, [isEditing, params.id]);
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 1, // Get full quality first, we resize later
+      });
 
-    if (!result.canceled) {
-      setVehicleImage(result.assets[0].uri);
+      if (!result.canceled) {
+        // Resize and Compress using ImageManipulator
+        const manipResult = await ImageManipulator.manipulateAsync(
+          result.assets[0].uri,
+          [{ resize: { width: 600 } }], // Resize to 600px width (maintains aspect ratio)
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+        );
+
+        if (manipResult.base64) {
+             const sizeInBytes = manipResult.base64.length * 0.75;
+             console.log(`Resized Image size: ${Math.round(sizeInBytes / 1024)} KB`);
+             
+             if (sizeInBytes > 950000) {
+                 Alert.alert('Still too large', 'Even after resizing, this image is too complex.');
+                 return;
+             }
+
+             const base64Uri = `data:image/jpeg;base64,${manipResult.base64}`;
+             setVehicleImage(base64Uri);
+        }
+      }
+    } catch (e) {
+      console.error("Error picking/resizing image:", e);
+      Alert.alert('Error', 'Failed to process image');
     }
   };
 
@@ -62,6 +86,10 @@ export default function AddVehicleScreen() {
     }
 
     setLoading(true);
+    
+    // Check if image is valid (either a remote URL or a Base64 string)
+    // If it's a temp URI (starts with file:// or blob:), we shouldn't save it as is if we want persistence
+    // But our new pickImage ensures we setVehicleImage to the base64 URI immediately.
     
     const vehicleData: any = {
       name,

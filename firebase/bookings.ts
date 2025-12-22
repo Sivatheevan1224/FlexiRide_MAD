@@ -83,16 +83,16 @@ export interface Booking {
 export const calculatePrice = (pricePerDay: number, pickupDate: string, returnDate: string): number => {
   const pickup = new Date(pickupDate);
   const returnD = new Date(returnDate);
-  
+
   // Validate dates
   if (isNaN(pickup.getTime()) || isNaN(returnD.getTime()) || returnD < pickup) {
     return 0;
   }
-  
+
   // Calculate number of days (minimum 1 day)
   const msPerDay = 24 * 60 * 60 * 1000;
   const days = Math.max(1, Math.ceil((returnD.getTime() - pickup.getTime() + msPerDay) / msPerDay));
-  
+
   return pricePerDay * days;
 };
 
@@ -108,8 +108,8 @@ export const calculatePrice = (pricePerDay: number, pickupDate: string, returnDa
  * @returns Whether vehicle is available, and any conflicting bookings
  */
 export const checkAvailability = async (
-  vehicleId: string, 
-  pickupDate: string, 
+  vehicleId: string,
+  pickupDate: string,
   returnDate: string
 ): Promise<{
   available: boolean;
@@ -119,34 +119,34 @@ export const checkAvailability = async (
   try {
     const pickup = new Date(pickupDate);
     const returnD = new Date(returnDate);
-    
+
     // Validate date range
     if (isNaN(pickup.getTime()) || isNaN(returnD.getTime()) || returnD < pickup) {
       return { available: false, error: 'Invalid date range' };
     }
-    
+
     // Query existing bookings for this vehicle that are active or pending
     const q = query(
       collection(db, 'bookings'),
       where('vehicleId', '==', vehicleId),
       where('status', 'in', ['active', 'pending'])  // Only check non-finished bookings
     );
-    
+
     const querySnapshot = await getDocs(q);
     const conflicts: Booking[] = [];
-    
+
     // Check each existing booking for date overlap
     querySnapshot.forEach(doc => {
       const booking = { id: doc.id, ...doc.data() } as Booking;
       const existingPickup = new Date(booking.pickupDate);
       const existingReturn = new Date(booking.returnDate);
-      
+
       // Date overlap formula: (StartA <= EndB) && (StartB <= EndA)
       if ((pickup <= existingReturn) && (existingPickup <= returnD)) {
         conflicts.push(booking);
       }
     });
-    
+
     return { available: conflicts.length === 0, conflicts };
   } catch (error: any) {
     console.error('Check availability error:', error);
@@ -177,21 +177,21 @@ export const createBooking = async (bookingData: Omit<Booking, 'id' | 'createdAt
       bookingData.pickupDate,
       bookingData.returnDate
     );
-    
+
     if (!availability.available) {
-      return { 
-        success: false, 
-        error: 'Vehicle not available for selected dates' 
+      return {
+        success: false,
+        error: 'Vehicle not available for selected dates'
       };
     }
-    
+
     // Step 2: Create the booking document
     const docRef = await addDoc(collection(db, 'bookings'), {
       ...bookingData,
       status: 'pending',  // New bookings start as pending
       createdAt: new Date().toISOString(),
     });
-    
+
     return { success: true, bookingId: docRef.id };
   } catch (error: any) {
     console.error('Create booking error:', error);
@@ -219,20 +219,20 @@ export const getUserBookings = async (userId: string): Promise<{
       collection(db, 'bookings'),
       where('userId', '==', userId)
     );
-    
+
     const querySnapshot = await getDocs(q);
     let bookings: Booking[] = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Booking));
-    
+
     // Sort in JavaScript instead of Firestore to avoid composite index requirement
     bookings = bookings.sort((a, b) => {
       const dateA = new Date(a.createdAt || 0).getTime();
       const dateB = new Date(b.createdAt || 0).getTime();
       return dateB - dateA; // Newest first
     });
-    
+
     return { success: true, bookings };
   } catch (error: any) {
     console.error('Get user bookings error:', error);
@@ -256,12 +256,12 @@ export const getAllBookings = async (): Promise<{
   try {
     const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    
+
     const bookings: Booking[] = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Booking));
-    
+
     return { success: true, bookings };
   } catch (error: any) {
     console.error('Get all bookings error:', error);
@@ -285,7 +285,7 @@ export const getAllBookings = async (): Promise<{
  * @returns Success status
  */
 export const updateBookingStatus = async (
-  bookingId: string, 
+  bookingId: string,
   status: Booking['status']
 ): Promise<{
   success: boolean;
@@ -297,10 +297,41 @@ export const updateBookingStatus = async (
       status,
       updatedAt: new Date().toISOString(),
     });
-    
+
     return { success: true };
   } catch (error: any) {
     console.error('Update booking status error:', error);
     return { success: false, error: error.message || 'Failed to update booking' };
+  }
+};
+
+/**
+ * Get all active and pending bookings
+ * 
+ * Used to check vehicle availability across the system
+ * 
+ * @returns Array of active/pending bookings
+ */
+export const getActiveBookings = async (): Promise<{
+  success: boolean;
+  bookings?: Booking[];
+  error?: string;
+}> => {
+  try {
+    const q = query(
+      collection(db, 'bookings'),
+      where('status', 'in', ['active', 'pending'])
+    );
+
+    const querySnapshot = await getDocs(q);
+    const bookings: Booking[] = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Booking));
+
+    return { success: true, bookings };
+  } catch (error: any) {
+    console.error('Get active bookings error:', error);
+    return { success: false, error: error.message || 'Failed to get active bookings' };
   }
 };

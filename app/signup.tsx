@@ -11,7 +11,7 @@ import { signUp } from '../firebase/auth';
 
 export default function SignupScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,11 +41,11 @@ export default function SignupScreen() {
       // Use Firebase authentication
       const result = await signUp(email, password, name);
       
-      if (result.success && result.userData) {
+      if (result.success && result.userData && result.user) {
         console.log('Signup successful:', result.userData);
         
         // Set session in AuthContext
-        await login(result.userData);
+        await setSession(result.user, result.userData);
         
         Alert.alert(
           'Success', 
@@ -65,11 +65,38 @@ export default function SignupScreen() {
           ]
         );
       } else {
-        Alert.alert('Signup Failed', result.error || 'Failed to create account');
+        let message = result.error || 'Failed to create account';
+        const errorMessage = result.error || '';
+        
+        if (errorMessage.includes('auth/email-already-in-use')) {
+          message = 'This email is already in use. Please use a different email or login.';
+        } else if (errorMessage.includes('auth/weak-password')) {
+          message = 'Password should be at least 6 characters.';
+        } else if (errorMessage.includes('auth/invalid-email')) {
+          message = 'Please enter a valid email address.';
+        } else if (errorMessage.includes('auth/network-request-failed')) {
+          message = 'Network error. Please check your internet connection.';
+        }
+        
+        Alert.alert('Signup Failed', message);
       }
     } catch (error: any) {
       console.error('Signup error:', error);
-      Alert.alert('Error', error.message || 'An error occurred during signup');
+      
+      let message = 'An error occurred during signup';
+      const errorMessage = error.message || '';
+      
+      if (errorMessage.includes('auth/email-already-in-use')) {
+        message = 'This email is already in use. Please use a different email or login.';
+      } else if (errorMessage.includes('auth/weak-password')) {
+        message = 'Password should be at least 6 characters.';
+      } else if (errorMessage.includes('auth/invalid-email')) {
+        message = 'Please enter a valid email address.';
+      } else if (errorMessage.includes('auth/network-request-failed')) {
+        message = 'Network error. Please check your internet connection.';
+      }
+
+      Alert.alert('Signup Error', message);
     } finally {
       setLoading(false);
     }
