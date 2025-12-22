@@ -63,7 +63,6 @@ export default function LoginScreen() {
         message = 'Invalid email or password.';
       }
       Alert.alert('Login Failed', message);
-    }
     } finally {
       setLoading(false);
     }
