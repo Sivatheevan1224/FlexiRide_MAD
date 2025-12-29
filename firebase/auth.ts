@@ -41,6 +41,7 @@
 import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   updateProfile,
   User
@@ -168,6 +169,24 @@ export const signOut = async (): Promise<{
   } catch (error: any) {
     console.error('Signout error:', error);
     return { success: false, error: error.message || 'Signout failed' };
+  }
+};
+
+/**
+ * Send password reset email
+ * 
+ * @param email - The email address to send the reset link to
+ */
+export const sendPasswordReset = async (email: string): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Password reset error:', error);
+    return { success: false, error: error.message || 'Failed to send reset email' };
   }
 };
 

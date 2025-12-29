@@ -1,6 +1,6 @@
 // Vehicle Details Screen
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { getVehicleById } from '../firebase/vehicles';
 
 export default function VehicleDetailsScreen() {
   const router = useRouter();
+  const navigation = useNavigation(); // Use navigation for safe back check
   const params = useLocalSearchParams();
   const [vehicle, setVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,14 @@ export default function VehicleDetailsScreen() {
     setLoading(false);
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      router.replace('/home');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-slate-50 justify-center items-center">
@@ -58,7 +67,7 @@ export default function VehicleDetailsScreen() {
         <Ionicons name="alert-circle" size={64} color="#ef4444" />
         <Text className="text-neutral-800 text-xl font-bold mt-4">Vehicle Not Found</Text>
         <Text className="text-neutral-500 text-center mt-2">Unable to load vehicle details</Text>
-        <Button title="Go Back" onPress={() => router.back()} className="mt-6" />
+        <Button title="Go Back" onPress={handleBack} className="mt-6" />
       </SafeAreaView>
     );
   }
@@ -81,7 +90,7 @@ export default function VehicleDetailsScreen() {
             resizeMode="cover"
           />
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={handleBack}
             className="absolute top-4 left-4 bg-white/90 rounded-full p-2"
           >
             <Ionicons name="arrow-back" size={24} color="#1f2937" />
@@ -133,7 +142,7 @@ export default function VehicleDetailsScreen() {
           <Button
             title="Book Now"
             onPress={() =>
-              router.push(`/booking?id=${vehicle.id}&name=${vehicle.name}&price=${vehicle.price}&image=${encodeURIComponent(vehicle.image)}`)
+              router.push(`/booking?id=${vehicle.id}&name=${vehicle.name}&price=${vehicle.price}`)
             }
             size="lg"
           />

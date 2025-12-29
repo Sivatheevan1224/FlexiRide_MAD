@@ -1,17 +1,19 @@
 // Booking Screen
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
 import Card from '../components/ui/card';
 import { getCurrentUser } from '../firebase/auth';
 import { checkAvailability, createBooking } from '../firebase/bookings';
+import { getVehicleById } from '../firebase/vehicles';
 
 export default function BookingScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const params = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +22,18 @@ export default function BookingScreen() {
   const vehicleName = params.name || 'Honda City';
   const pricePerDay = Number(params.price) || 1500;
   
+  const [fetchedVehicle, setFetchedVehicle] = useState<any>(null);
+
+  useEffect(() => {
+    if (vehicleId) {
+      getVehicleById(vehicleId).then((result) => {
+        if (result.success && result.vehicle) {
+          setFetchedVehicle(result.vehicle);
+        }
+      });
+    }
+  }, [vehicleId]);
+
   let vehicleImage = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400';
   try {
     if (params.image) {
@@ -28,6 +42,11 @@ export default function BookingScreen() {
   } catch (error) {
     console.log('Error decoding image URL:', error);
   }
+
+  // Use fetched details if available, otherwise params
+  const displayedName = fetchedVehicle?.name || vehicleName;
+  const displayedPrice = fetchedVehicle?.pricePerDay || pricePerDay;
+  const displayedImage = fetchedVehicle?.imageUrl || vehicleImage;
 
   // Date states - start with today
   const today = new Date();
@@ -53,11 +72,15 @@ export default function BookingScreen() {
   };
 
   const formatDateISO = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    // Manually format to YYYY-MM-DD using local time
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const numberOfDays = Math.max(1, Math.ceil((returnDate.getTime() - pickupDate.getTime()) / (1000 * 60 * 60 * 24)));
-  const totalPrice = pricePerDay * numberOfDays;
+  const totalPrice = displayedPrice * numberOfDays;
 
   const onPickupDateChange = (event: any, selectedDate?: Date) => {
     console.log('Pickup date change:', event.type, selectedDate);
@@ -112,6 +135,14 @@ export default function BookingScreen() {
     }
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      router.replace('/home');
+    }
+  };
+
   const handleProceedToPayment = async () => {
     const currentUser = getCurrentUser();
     if (!currentUser) {
@@ -129,10 +160,24 @@ export default function BookingScreen() {
 
     try {
       // Check availability first
+      console.log('Checking availability for:', vehicleId, formatDateISO(pickupDate), formatDateISO(returnDate));
       const availability = await checkAvailability(vehicleId, formatDateISO(pickupDate), formatDateISO(returnDate));
       
+      console.log('Availability result:', availability);
+
       if (!availability.available) {
-        Alert.alert('Not Available', 'Vehicle is not available for selected dates. Please choose different dates.');
+        // Show specific error if available (e.g. index missing), otherwise generic message
+        let errorMessage = availability.error || 'Vehicle is not available for selected dates.';
+        
+        // If there are conflicts, show the dates
+        if (availability.conflicts && availability.conflicts.length > 0) {
+          const conflictDates = availability.conflicts.map(c => 
+            `${c.pickupDate} to ${c.returnDate}`
+          ).join('\n');
+          errorMessage += `\n\nConflicting bookings:\n${conflictDates}`;
+        }
+        
+        Alert.alert('Not Available', errorMessage);
         setLoading(false);
         return;
       }
@@ -140,13 +185,15 @@ export default function BookingScreen() {
       setLoading(false);
       setShowPayment(true);
     } catch (error: any) {
+      console.error('handleProceedToPayment error:', error);
       setLoading(false);
       Alert.alert('Error', error.message || 'An error occurred');
     }
   };
 
   const formatCardNumber = (text: string) => {
-    const cleaned = text.replace(/\s/g, '');
+    // Remove all non-numeric characters
+    const cleaned = text.replace(/\D/g, '');
     const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
     return formatted.substring(0, 19); // Max 16 digits + 3 spaces
   };
@@ -173,6 +220,22 @@ export default function BookingScreen() {
       Alert.alert('Invalid Expiry', 'Please enter expiry date (MM/YY)');
       return;
     }
+
+    // Validate expiry date is in the future
+    const [expMonth, expYear] = expiryDate.split('/').map(num => parseInt(num, 10));
+    
+    if (!expMonth || !expYear || expMonth < 1 || expMonth > 12) {
+       Alert.alert('Invalid Date', 'Please enter a valid month (01-12)');
+       return;
+    }
+
+    const twoDigitYear = parseInt(new Date().getFullYear().toString().slice(-2));
+    const currentMonth = new Date().getMonth() + 1;
+
+    if (expYear < twoDigitYear || (expYear === twoDigitYear && expMonth < currentMonth)) {
+      Alert.alert('Card Expired', 'Your card has expired. Please use a valid card.');
+      return;
+    }
     if (!cvv || cvv.length !== 3) {
       Alert.alert('Invalid CVV', 'Please enter 3-digit CVV');
       return;
@@ -187,7 +250,7 @@ export default function BookingScreen() {
       const result = await createBooking({
         userId: currentUser!.uid,
         vehicleId: vehicleId,
-        vehicleName: vehicleName as string,
+        vehicleName: displayedName as string,
         pickupDate: formatDateISO(pickupDate),
         returnDate: formatDateISO(returnDate),
         totalPrice: totalPrice + 100, // Including service fee
@@ -213,7 +276,7 @@ export default function BookingScreen() {
         {/* Header */}
         <View className="bg-blue-600 px-6 pt-6 pb-8 rounded-b-3xl">
           <View className="flex-row items-center mb-4" style={{ gap: 16 }}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={handleBack}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
             <Text className="text-white text-2xl font-bold">Confirm Booking</Text>
@@ -227,15 +290,15 @@ export default function BookingScreen() {
             <View className="flex-row" style={{ gap: 16 }}>
               <View className="w-24 h-24 rounded-lg bg-slate-100 overflow-hidden">
                 <Image
-                  source={{ uri: vehicleImage }}
+                  source={{ uri: displayedImage }}
                   className="w-full h-full"
                   resizeMode="cover"
                 />
               </View>
               <View className="flex-1 justify-center">
-                <Text className="text-neutral-800 font-semibold text-lg">{vehicleName}</Text>
+                <Text className="text-neutral-800 font-semibold text-lg">{displayedName}</Text>
                 <Text className="text-blue-600 font-bold text-xl mt-1">
-                  Rs. {pricePerDay}/day
+                  Rs. {displayedPrice}/day
                 </Text>
               </View>
             </View>
@@ -246,57 +309,122 @@ export default function BookingScreen() {
             <Text className="text-neutral-800 font-semibold text-lg mb-4">Booking Details</Text>
             <View style={{ gap: 12 }}>
               {/* Pickup Date */}
-              <TouchableOpacity 
-                onPress={() => setShowPickupPicker(true)}
-                activeOpacity={0.7}
-                className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
-              >
-                <View className="flex-row items-center" style={{ gap: 12 }}>
-                  <Ionicons name="calendar" size={22} color="#2563eb" />
-                  <View>
-                    <Text className="text-neutral-500 text-xs mb-1">Pickup Date</Text>
-                    <Text className="text-neutral-800 font-semibold text-base">{formatDate(pickupDate)}</Text>
+              {Platform.OS === 'web' ? (
+                <View className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                  <View className="flex-row items-center" style={{ gap: 12 }}>
+                    <Ionicons name="calendar" size={22} color="#2563eb" />
+                    <View>
+                       <Text className="text-neutral-500 text-xs mb-1">Pickup Date</Text>
+                       {React.createElement('input', {
+                          type: 'date',
+                          value: formatDateISO(pickupDate),
+                          onChange: (e: any) => {
+                             const date = new Date(e.target.value);
+                             if (!isNaN(date.getTime())) {
+                               onPickupDateChange({ type: 'set' }, date);
+                             }
+                          },
+                          style: { 
+                            border: 'none', 
+                            background: 'transparent',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            color: '#1f2937',
+                            outline: 'none',
+                            fontFamily: 'inherit'
+                          }
+                       })}
+                    </View>
                   </View>
                 </View>
-                <Ionicons name="chevron-down" size={20} color="#2563eb" />
-              </TouchableOpacity>
+              ) : (
+                <>
+                  <TouchableOpacity 
+                    onPress={() => setShowPickupPicker(true)}
+                    activeOpacity={0.7}
+                    className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
+                  >
+                    <View className="flex-row items-center" style={{ gap: 12 }}>
+                      <Ionicons name="calendar" size={22} color="#2563eb" />
+                      <View>
+                        <Text className="text-neutral-500 text-xs mb-1">Pickup Date</Text>
+                        <Text className="text-neutral-800 font-semibold text-base">{formatDate(pickupDate)}</Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-down" size={20} color="#2563eb" />
+                  </TouchableOpacity>
 
-              {showPickupPicker && (
-                <DateTimePicker
-                  value={pickupDate}
-                  mode="date"
-                  display="default"
-                  onChange={onPickupDateChange}
-                  minimumDate={new Date()}
-                  maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
-                />
+                  {showPickupPicker && (
+                    <DateTimePicker
+                      value={pickupDate}
+                      mode="date"
+                      display="default"
+                      onChange={onPickupDateChange}
+                      minimumDate={new Date()}
+                      maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+                    />
+                  )}
+                </>
               )}
 
               {/* Return Date */}
-              <TouchableOpacity 
-                onPress={() => setShowReturnPicker(true)}
-                activeOpacity={0.7}
-                className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
-              >
-                <View className="flex-row items-center" style={{ gap: 12 }}>
-                  <Ionicons name="calendar" size={22} color="#2563eb" />
-                  <View>
-                    <Text className="text-neutral-500 text-xs mb-1">Return Date</Text>
-                    <Text className="text-neutral-800 font-semibold text-base">{formatDate(returnDate)}</Text>
+              {Platform.OS === 'web' ? (
+                <View className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                  <View className="flex-row items-center" style={{ gap: 12 }}>
+                    <Ionicons name="calendar" size={22} color="#2563eb" />
+                    <View>
+                       <Text className="text-neutral-500 text-xs mb-1">Return Date</Text>
+                       {React.createElement('input', {
+                          type: 'date',
+                          value: formatDateISO(returnDate),
+                          onChange: (e: any) => {
+                             const date = new Date(e.target.value);
+                             if (!isNaN(date.getTime())) {
+                               onReturnDateChange({ type: 'set' }, date);
+                             }
+                          },
+                          min: formatDateISO(new Date(pickupDate.getTime() + 86400000)),
+                          style: { 
+                            border: 'none', 
+                            background: 'transparent',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            color: '#1f2937',
+                            outline: 'none',
+                            fontFamily: 'inherit'
+                          }
+                       })}
+                    </View>
                   </View>
                 </View>
-                <Ionicons name="chevron-down" size={20} color="#2563eb" />
-              </TouchableOpacity>
+              ) : (
+                <>
+                  <TouchableOpacity 
+                    onPress={() => setShowReturnPicker(true)}
+                    activeOpacity={0.7}
+                    className="flex-row justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-2 border-blue-200"
+                  >
+                    <View className="flex-row items-center" style={{ gap: 12 }}>
+                      <Ionicons name="calendar" size={22} color="#2563eb" />
+                      <View>
+                        <Text className="text-neutral-500 text-xs mb-1">Return Date</Text>
+                        <Text className="text-neutral-800 font-semibold text-base">{formatDate(returnDate)}</Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-down" size={20} color="#2563eb" />
+                  </TouchableOpacity>
 
-              {showReturnPicker && (
-                <DateTimePicker
-                  value={returnDate}
-                  mode="date"
-                  display="default"
-                  onChange={onReturnDateChange}
-                  minimumDate={new Date(pickupDate.getTime() + 86400000)}
-                  maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
-                />
+                  {showReturnPicker && (
+                    <DateTimePicker
+                      value={returnDate}
+                      mode="date"
+                      display="default"
+                      onChange={onReturnDateChange}
+                      minimumDate={new Date(pickupDate.getTime() + 86400000)}
+                      maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+                    />
+                  )}
+                </>
               )}
 
               <View className="flex-row justify-between items-center py-2">
@@ -316,9 +444,9 @@ export default function BookingScreen() {
               <View className="flex-row justify-between items-center">
                 <Text className="text-neutral-600">Rental ({numberOfDays} days)</Text>
                 <Text className="text-neutral-800 font-medium">
-                  Rs. {pricePerDay} × {numberOfDays} days
+                  Rs. {displayedPrice} × {numberOfDays} days
                 </Text>
-                <Text className="text-neutral-800 font-medium">Rs. {pricePerDay * numberOfDays}</Text>
+                <Text className="text-neutral-800 font-medium">Rs. {displayedPrice * numberOfDays}</Text>
               </View>
 
               <View className="flex-row justify-between items-center">

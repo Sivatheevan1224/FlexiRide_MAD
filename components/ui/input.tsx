@@ -15,6 +15,7 @@ interface InputProps {
   multiline?: boolean;
   numberOfLines?: number;
   className?: string;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
 export default function Input({
@@ -29,6 +30,7 @@ export default function Input({
   multiline = false,
   numberOfLines = 1,
   className = '',
+  autoCapitalize = 'sentences',
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -52,6 +54,7 @@ export default function Input({
           keyboardType={keyboardType}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          autoCapitalize={autoCapitalize}
           className={`bg-white border border-slate-300 rounded-xl px-4 py-3.5 text-neutral-800 ${
             icon ? 'pl-12' : ''
           } ${multiline ? 'h-24' : ''} ${error ? 'border-red-500' : ''}`}
