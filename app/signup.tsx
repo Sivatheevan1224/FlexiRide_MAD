@@ -30,8 +30,9 @@ export default function SignupScreen() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      Alert.alert('Weak Password', 'Password must be at least 6 characters long and include letters, numbers, and special symbols (!@#...).');
       return;
     }
 
@@ -158,7 +159,9 @@ export default function SignupScreen() {
               secureTextEntry
               icon="lock-closed-outline"
             />
-            <Text className="text-xs text-neutral-500 mb-2 ml-1">Password must be at least 6 characters long.</Text>
+            <Text className="text-xs text-neutral-500 mb-2 ml-1">
+              Password must be at least 6 characters long and include letters, numbers, and special symbols.
+            </Text>
 
             <Input
               label="Confirm Password"

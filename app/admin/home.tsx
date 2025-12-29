@@ -21,43 +21,120 @@ export default function AdminHomeScreen() {
     { label: 'Total Users', value: '0', icon: 'people', color: 'bg-purple-500' },
     { label: 'Revenue', value: 'Rs. 0', icon: 'cash', color: 'bg-yellow-500' },
   ]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     loadStats();
   }, []);
 
+  const getTimeAgo = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
+  };
+
   const loadStats = async () => {
-    // Load vehicles
-    const vehiclesResult = await getAllVehicles();
-    const totalVehicles = vehiclesResult.success && vehiclesResult.vehicles ? vehiclesResult.vehicles.length : 0;
+    try {
+      // Load vehicles
+      const vehiclesResult = await getAllVehicles();
+      const vehicles = vehiclesResult.success && vehiclesResult.vehicles ? vehiclesResult.vehicles : [];
+      const totalVehicles = vehicles.length;
 
-    // Load bookings
-    const bookingsResult = await getAllBookings();
-    let activeBookings = 0;
-    let revenue = 0;
+      // Load bookings
+      const bookingsResult = await getAllBookings();
+      const bookings = bookingsResult.success && bookingsResult.bookings ? bookingsResult.bookings : [];
+      
+      let activeBookings = 0;
+      let revenue = 0;
 
-    if (bookingsResult.success && bookingsResult.bookings) {
-      activeBookings = bookingsResult.bookings.filter(b => b.status === 'active' || b.status === 'pending').length;
-      revenue = bookingsResult.bookings
+      activeBookings = bookings.filter(b => b.status === 'active' || b.status === 'pending').length;
+      revenue = bookings
         .filter(b => b.status === 'completed' || b.status === 'active')
         .reduce((sum, b) => sum + b.totalPrice, 0);
-    }
 
-    // Load users count
-    let totalUsers = 0;
-    try {
+      // Load users
       const usersSnapshot = await getDocs(collection(db, 'users'));
-      totalUsers = usersSnapshot.size;
-    } catch (error) {
-      console.error('Error loading users:', error);
-    }
+      const totalUsers = usersSnapshot.size;
+      const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
 
-    setStats([
-      { label: 'Total Vehicles', value: totalVehicles.toString(), icon: 'car-sport', color: 'bg-blue-500' },
-      { label: 'Active Bookings', value: activeBookings.toString(), icon: 'calendar', color: 'bg-green-500' },
-      { label: 'Total Users', value: totalUsers.toString(), icon: 'people', color: 'bg-purple-500' },
-      { label: 'Revenue', value: `Rs. ${(revenue / 1000).toFixed(1)}K`, icon: 'cash', color: 'bg-yellow-500' },
-    ]);
+      setStats([
+        { label: 'Total Vehicles', value: totalVehicles.toString(), icon: 'car-sport', color: 'bg-blue-500' },
+        { label: 'Active Bookings', value: activeBookings.toString(), icon: 'calendar', color: 'bg-green-500' },
+        { label: 'Total Users', value: totalUsers.toString(), icon: 'people', color: 'bg-purple-500' },
+        { label: 'Revenue', value: `Rs. ${(revenue / 1000).toFixed(1)}K`, icon: 'cash', color: 'bg-yellow-500' },
+      ]);
+
+      // Process Recent Activity
+      let activityList: any[] = [];
+
+      // Add recent bookings
+      bookings.forEach(b => {
+        activityList.push({
+          id: b.id,
+          type: 'booking',
+          title: 'New booking confirmed',
+          subtitle: `${b.vehicleName}`,
+          createdAt: b.createdAt,
+          icon: 'checkmark',
+          color: 'bg-green-100',
+          iconColor: '#22c55e'
+        });
+      });
+
+      // Add recent vehicles
+      vehicles.forEach(v => {
+        activityList.push({
+          id: v.id,
+          type: 'vehicle',
+          title: 'Vehicle added',
+          subtitle: v.name,
+          createdAt: v.createdAt,
+          icon: 'car-sport',
+          color: 'bg-blue-100',
+          iconColor: '#2563eb'
+        });
+      });
+
+      // Add recent users
+      users.forEach(u => {
+        activityList.push({
+          id: u.uid || u.id,
+          type: 'user',
+          title: 'New user registered',
+          subtitle: u.name || u.email,
+          createdAt: u.createdAt,
+          icon: 'person-add',
+          color: 'bg-purple-100',
+          iconColor: '#9333ea'
+        });
+      });
+
+      // Sort by date descending
+      activityList.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      // Take top 5
+      setRecentActivity(activityList.slice(0, 5));
+
+    } catch (error) {
+      console.error('Error loading admin stats:', error);
+    }
   };
 
   const menuItems = [
@@ -195,37 +272,30 @@ export default function AdminHomeScreen() {
           </View>
 
           {/* Recent Activity */}
+          {/* Recent Activity */}
           <View style={{ marginTop: 24 }}>
             <Text className="text-neutral-800 text-xl font-bold mb-4">Recent Activity</Text>
             <Card>
               <View>
-                <View className="flex-row items-center pb-3 border-b border-slate-100" style={{ gap: 12 }}>
-                  <View className="bg-green-100 w-10 h-10 rounded-full items-center justify-center">
-                    <Ionicons name="checkmark" size={20} color="#22c55e" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-neutral-800 font-medium">New booking confirmed</Text>
-                    <Text className="text-neutral-500 text-xs">2 minutes ago</Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center pb-3 border-b border-slate-100" style={{ gap: 12, marginTop: 12 }}>
-                  <View className="bg-blue-100 w-10 h-10 rounded-full items-center justify-center">
-                    <Ionicons name="car-sport" size={20} color="#2563eb" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-neutral-800 font-medium">Honda City added</Text>
-                    <Text className="text-neutral-500 text-xs">1 hour ago</Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center" style={{ gap: 12, marginTop: 12 }}>
-                  <View className="bg-purple-100 w-10 h-10 rounded-full items-center justify-center">
-                    <Ionicons name="person-add" size={20} color="#9333ea" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-neutral-800 font-medium">New user registered</Text>
-                    <Text className="text-neutral-500 text-xs">3 hours ago</Text>
-                  </View>
-                </View>
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((item, index) => (
+                    <View 
+                      key={index} 
+                      className={`flex-row items-center pb-3 ${index !== recentActivity.length - 1 ? 'border-b border-slate-100' : ''}`} 
+                      style={{ gap: 12, marginTop: index === 0 ? 0 : 12 }}
+                    >
+                      <View className={`${item.color} w-10 h-10 rounded-full items-center justify-center`}>
+                        <Ionicons name={item.icon as any} size={20} color={item.iconColor} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-neutral-800 font-medium">{item.title}</Text>
+                        <Text className="text-neutral-500 text-xs">{item.subtitle} • {getTimeAgo(item.createdAt)}</Text>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="text-neutral-500 text-center py-4">No recent activity</Text>
+                )}
               </View>
             </Card>
           </View>

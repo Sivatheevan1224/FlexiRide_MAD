@@ -120,6 +120,8 @@ export const checkAvailability = async (
     const pickup = new Date(pickupDate);
     const returnD = new Date(returnDate);
 
+    console.log(`[checkAvailability] Checking ${vehicleId} from ${pickupDate} to ${returnDate}`);
+
     // Validate date range
     if (isNaN(pickup.getTime()) || isNaN(returnD.getTime()) || returnD < pickup) {
       return { available: false, error: 'Invalid date range' };
@@ -150,6 +152,7 @@ export const checkAvailability = async (
     return { available: conflicts.length === 0, conflicts };
   } catch (error: any) {
     console.error('Check availability error:', error);
+    // Return the actual error message so the UI can display it (e.g. missing index)
     return { available: false, error: error.message || 'Failed to check availability' };
   }
 };
