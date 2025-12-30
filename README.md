@@ -1,3 +1,11 @@
+
+
+[![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61dafb?logo=react)](https://reactnative.dev)
+[![Expo](https://img.shields.io/badge/Expo-54.0.30-000020?logo=expo)](https://expo.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178c6?logo=typescript)](https://www.typescriptlang.org)
+[![Firebase](https://img.shields.io/badge/Firebase-12.6.0-ffca28?logo=firebase)](https://firebase.google.com)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4.19-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
+
 # 🚗 FlexiRide - Vehicle Rental System
 
 A modern, full-featured mobile application for car and bike rentals built with **React Native**, **Expo**, and **Firebase**. FlexiRide provides a seamless rental experience with real-time booking management, admin controls, and a beautiful, responsive interface powered by NativeWind (TailwindCSS).
