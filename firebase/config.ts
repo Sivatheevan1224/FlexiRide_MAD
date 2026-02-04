@@ -1,83 +1,54 @@
-/**
- * FIREBASE CONFIGURATION FILE
- * ============================
- * 
- * PURPOSE: This file initializes Firebase services for the mobile app.
- * Firebase is our Backend-as-a-Service (BaaS) that provides:
- * 
- * SERVICES WE USE:
- * 
- * 1. FIREBASE AUTHENTICATION (auth)
- *    - User signup and login (email/password)
- *    - Session management (keeps users logged in)
- *    - Secure password handling
- * 
- * 2. CLOUD FIRESTORE (db)
- *    - NoSQL database for storing data
- *    - Collections: users, vehicles, bookings
- *    - Real-time data synchronization
- *    - Offline support (works without internet)
- * 
- * 3. FIREBASE STORAGE (storage)
- *    - File storage for images (vehicle photos, profile pictures)
- *    - CDN for fast image loading
- * 
- * HOW IT WORKS:
-
- * - firebaseConfig contains project credentials from environment variables
- 
- * - initializeApp() creates the Firebase app instance
- * - getAuth/getFirestore/getStorage initialize specific services
- * - We export these services to use throughout the app
- * 
- * SECURITY NOTE:
-
-
- * - API keys are loaded from .env file (not committed to git)
- * - Copy .env.example to .env and fill in your values
-
- * - Security is enforced by Firebase Security Rules (in Firebase Console)
- * - Never include service account keys in client code
- */
-
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 /**
- * Firebase Configuration Object
- main
- * These values come from environment variables (.env file)
- * Project: flexiride-4e206
- * 
- * ⚠️ SECURITY: API keys are loaded from .env file (not committed to git)
- * Copy .env.example to .env and fill in your values
+ * FIREBASE CONFIGURATION FILE
+ * ============================
  */
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,              // API key for Firebase services
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,      // Auth popup/redirect domain
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,        // Unique project identifier
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET, // Cloud Storage bucket
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID, // Cloud Messaging sender ID
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,                // Web app identifier
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID, // Google Analytics ID
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize the Firebase app with our configuration
-const app = initializeApp(firebaseConfig);
+// Initialize the Firebase app
+// Check if app is already initialized to avoid "Firebase App named '[DEFAULT]' already exists" error during hot reload
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 /**
- * Initialize and export Firebase services
- * These are imported in other files like:
- * - firebase/auth.ts (for login/signup)
- * - firebase/vehicles.ts (for vehicle CRUD)
- * - firebase/bookings.ts (for booking operations)
+ * Initialize Firebase Auth with Persistence
  * 
- * Note: Session persistence is handled by AuthContext using AsyncStorage
+ * The error "Component auth has not been registered yet" happens because standard getAuth() 
+ * often fails in React Native/Expo environments.
+ * 
+ * We must use initializeAuth() with explicit AsyncStorage persistence.
  */
-export const auth = getAuth(app);
-export const db = getFirestore(app);    // Firestore database
-export const storage = getStorage(app); // File storage
+let auth;
+if (getApps().length > 0) {
+  try {
+    // Try to get existing auth instance first
+    auth = getAuth(app);
+  } catch (error) {
+    // If not found, initialize it
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage)
+    });
+  }
+} else {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
 
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+export { auth, db, storage };
 export default app;

@@ -1,0 +1,13 @@
+Group: L
+Project Name: FlexiRide - Vehicle Rental System
+
+Team Members:
+1. UWU/CST/22/083 - A. Sivatheevan (cst22083@std.uwu.ac.lk)
+2. UWU/CST/22/073 - RF. Nifla (cst22073@std.uwu.ac.lk)
+3. UWU/CST/22/016 - I.K.D.T.D. Premakumara (cst22016@std.uwu.ac.lk)
+4. UWU/CST/22/052 - T.V.K.R. Premarathna (cst22052@std.uwu.ac.lk)
+5. UWU/CST/22/049 - N.S. Jayathilake (cst22049@std.uwu.ac.lk)
+6. UWU/CST/22/098 - Y. Vishnu (cst22098@std.uwu.ac.lk)
+
+Supervisor:
+Mr. Ashan Rathnayake (ashan.uwu.ac.lk)

@@ -1,7 +1,7 @@
 // Forgot Password Screen
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../components/ui/button';
@@ -24,7 +24,9 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     
     try {
+      console.log('Attempting to send reset email to:', email);
       const result = await sendPasswordReset(email);
+      console.log('Reset email result:', result);
       
       if (result.success) {
         setSubmitted(true);
